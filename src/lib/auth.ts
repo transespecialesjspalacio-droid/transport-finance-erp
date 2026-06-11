@@ -24,13 +24,16 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
         const isValid = await bcrypt.compare(password, user.password);
         if (!isValid) return null;
 
-        return {
+        const userResult = {
           id: user.id,
           email: user.email,
           name: user.name,
           role: user.role,
           empresaId: user.empresaId,
         };
+
+        console.log("AUTHORIZE_DEBUG", userResult);
+        return userResult;
       },
     }),
   ],
