@@ -1,4 +1,5 @@
 import type { NextAuthConfig } from "next-auth";
+import Credentials from "next-auth/providers/credentials";
 
 export const authConfig: NextAuthConfig = {
   pages: {
@@ -50,5 +51,12 @@ export const authConfig: NextAuthConfig = {
       return session;
     },
   },
-  providers: [],
+  providers: [
+    Credentials({
+      async authorize(credentials) {
+        const { authorize: authorizeFn } = await import("./authorize");
+        return authorizeFn(credentials);
+      },
+    }),
+  ],
 };
