@@ -1,0 +1,96 @@
+import { prisma } from "@/lib/prisma";
+import { auth } from "@/lib/auth";
+
+const ITEMS_PER_PAGE = 10;
+
+function getEstadoConVencido(estado: string, saldoPendiente: number, fechaVencimiento: Date): string {
+  if (saldoPendiente > 0 && estado !== "PAGADO") {
+    if (new Date() > fechaVencimiento) return "VENCIDO";
+  }
+  return estado;
+}
+
+export async function getCuentasPagar(params: { q?: string; page?: string; estado?: string }) {
+  const session = await auth();
+  if (!session?.user?.empresaId) throw new Error("No autorizado");
+
+  const page = Math.max(1, Number(params.page) || 1);
+  const q = params.q?.trim() || "";
+  const estado = params.estado?.trim() || "";
+
+  const where: Record<string, unknown> = { empresaId: session.user.empresaId };
+
+  if (q) {
+    where.OR = [
+      { concepto: { contains: q, mode: "insensitive" as const } },
+      { tercero: { nombre: { contains: q, mode: "insensitive" as const } } },
+    ];
+  }
+
+  if (estado) where.estado = estado;
+
+  const [data, total] = await Promise.all([
+    prisma.cuentaPagar.findMany({
+      where,
+      include: {
+        tercero: { select: { id: true, nombre: true } },
+        servicio: { select: { id: true, fecha: true } },
+      },
+      skip: (page - 1) * ITEMS_PER_PAGE,
+      take: ITEMS_PER_PAGE,
+      orderBy: { createdAt: "desc" },
+    }),
+    prisma.cuentaPagar.count({ where }),
+  ]);
+
+  const dataConVencido = data.map((item) => ({
+    ...item,
+    estado: getEstadoConVencido(item.estado, Number(item.saldoPendiente), item.fechaVencimiento),
+  }));
+
+  return { data: dataConVencido, total, totalPages: Math.ceil(total / ITEMS_PER_PAGE), currentPage: page };
+}
+
+export async function getCuentaPagar(id: string) {
+  const session = await auth();
+  if (!session?.user?.empresaId) throw new Error("No autorizado");
+
+  const cuenta = await prisma.cuentaPagar.findFirst({
+    where: { id, empresaId: session.user.empresaId },
+    include: {
+      tercero: { select: { id: true, nombre: true } },
+      servicio: { select: { id: true, fecha: true, origen: true, destino: true } },
+      pagos: { orderBy: { fechaPago: "desc" } },
+    },
+  });
+
+  if (!cuenta) return null;
+
+  return {
+    ...cuenta,
+    estado: getEstadoConVencido(cuenta.estado, Number(cuenta.saldoPendiente), cuenta.fechaVencimiento),
+  };
+}
+
+export async function getTercerosOptions() {
+  const session = await auth();
+  if (!session?.user?.empresaId) return [];
+
+  return prisma.tercero.findMany({
+    where: { empresaId: session.user.empresaId, active: true },
+    select: { id: true, nombre: true },
+    orderBy: { nombre: "asc" },
+  });
+}
+
+export async function getServiciosOptions() {
+  const session = await auth();
+  if (!session?.user?.empresaId) return [];
+
+  return prisma.servicio.findMany({
+    where: { empresaId: session.user.empresaId },
+    select: { id: true, fecha: true, origen: true, destino: true },
+    orderBy: { fecha: "desc" },
+    take: 100,
+  });
+}
