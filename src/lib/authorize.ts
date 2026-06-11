@@ -21,7 +21,5 @@ export async function authorize(credentials: Record<string, unknown> | undefined
     role: user.role,
     empresaId: user.empresaId,
   };
-
-  console.log("AUTHORIZE_DEBUG", userResult);
   return userResult;
 }
