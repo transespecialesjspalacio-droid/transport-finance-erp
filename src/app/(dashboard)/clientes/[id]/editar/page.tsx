@@ -10,6 +10,7 @@ export default async function EditarClientePage(props: { params: Promise<{ id: s
 
   const defaultValues = {
     ...cliente,
+    codigo: cliente.codigo ?? undefined,
     contactoNombre: cliente.contactoNombre ?? undefined,
     contactoEmail: cliente.contactoEmail ?? undefined,
     contactoTelefono: cliente.contactoTelefono ?? undefined,

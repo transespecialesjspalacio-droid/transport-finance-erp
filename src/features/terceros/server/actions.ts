@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import { terceroSchema } from "../schemas/tercero-schema";
+import { generateCodigo, getNextConsecutive } from "@/lib/codigo";
 
 export async function createTercero(formData: FormData) {
   const session = await auth();
@@ -14,8 +15,11 @@ export async function createTercero(formData: FormData) {
   const parsed = terceroSchema.safeParse(raw);
   if (!parsed.success) throw new Error(parsed.error.issues.map((e: { message: string }) => e.message).join(", "));
 
+  const consecutive = await getNextConsecutive(session.user.empresaId, "tercero", prisma);
+  const codigo = generateCodigo(parsed.data.nombre, consecutive);
+
   await prisma.tercero.create({
-    data: { ...parsed.data, empresaId: session.user.empresaId },
+    data: { ...parsed.data, codigo, empresaId: session.user.empresaId },
   });
 
   revalidatePath("/terceros");

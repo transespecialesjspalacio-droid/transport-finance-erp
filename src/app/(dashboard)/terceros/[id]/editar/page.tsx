@@ -10,6 +10,7 @@ export default async function EditarTerceroPage(props: { params: Promise<{ id: s
 
   const defaultValues = {
     ...tercero,
+    codigo: tercero.codigo ?? undefined,
     rfc: tercero.rfc ?? undefined,
     contacto: tercero.contacto ?? undefined,
   };

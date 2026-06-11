@@ -2,7 +2,7 @@ import { z } from "zod";
 
 export const contratoSchema = z.object({
   clienteId: z.string().min(1, "Selecciona un cliente"),
-  codigo: z.string().min(2, "Mínimo 2 caracteres").max(20),
+  codigo: z.string().optional().or(z.literal("")),
   nombre: z.string().min(2, "Mínimo 2 caracteres").max(120),
   tipoServicio: z.enum(["ESCOLAR", "CORPORATIVO", "MEDICO", "EVENTO"]),
   fechaInicio: z.string().min(1, "Selecciona una fecha"),

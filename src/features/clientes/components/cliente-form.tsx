@@ -46,11 +46,12 @@ export function ClienteForm({ defaultValues }: Props) {
           <Input id="nombre" {...register("nombre")} />
           {errors.nombre && <p className="text-xs text-destructive">{errors.nombre.message}</p>}
         </div>
-        <div className="space-y-2">
-          <Label htmlFor="rfc">RFC</Label>
-          <Input id="rfc" {...register("rfc")} />
-          {errors.rfc && <p className="text-xs text-destructive">{errors.rfc.message}</p>}
-        </div>
+        {defaultValues?.codigo && (
+          <div className="space-y-2">
+            <Label htmlFor="codigo">Código</Label>
+            <Input id="codigo" value={defaultValues.codigo} readOnly />
+          </div>
+        )}
         <div className="space-y-2">
           <Label htmlFor="contactoNombre">Contacto</Label>
           <Input id="contactoNombre" {...register("contactoNombre")} />

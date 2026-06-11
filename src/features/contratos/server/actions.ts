@@ -14,11 +14,21 @@ export async function createContrato(formData: FormData) {
   const parsed = contratoSchema.safeParse(raw);
   if (!parsed.success) throw new Error(parsed.error.issues.map((e: { message: string }) => e.message).join(", "));
 
+  let codigo = parsed.data.codigo;
   const { fechaInicio, fechaFin, montoMensual, ...rest } = parsed.data;
+
+  if (!codigo) {
+    const cliente = await prisma.cliente.findFirst({
+      where: { id: rest.clienteId, empresaId: session.user.empresaId },
+      select: { codigo: true, rfc: true },
+    });
+    codigo = cliente?.codigo ?? cliente?.rfc ?? "SIN-CODIGO";
+  }
 
   await prisma.contrato.create({
     data: {
       ...rest,
+      codigo,
       empresaId: session.user.empresaId,
       fechaInicio: new Date(fechaInicio),
       fechaFin: fechaFin ? new Date(fechaFin) : null,

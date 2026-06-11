@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import { clienteSchema } from "../schemas/cliente-schema";
+import { generateCodigo, getNextConsecutive } from "@/lib/codigo";
 
 export async function createCliente(formData: FormData) {
   const session = await auth();
@@ -14,9 +15,11 @@ export async function createCliente(formData: FormData) {
   const parsed = clienteSchema.safeParse(raw);
   if (!parsed.success) throw new Error(parsed.error.issues.map((e: { message: string }) => e.message).join(", "));
 
-  await prisma.cliente.create({
-    data: { ...parsed.data, empresaId: session.user.empresaId },
-  });
+  const consecutive = await getNextConsecutive(session.user.empresaId, "cliente", prisma);
+  const codigo = generateCodigo(parsed.data.nombre, consecutive);
+  const data = { ...parsed.data, rfc: parsed.data.rfc || codigo, codigo, empresaId: session.user.empresaId };
+
+  await prisma.cliente.create({ data });
 
   revalidatePath("/clientes");
   redirect("/clientes");

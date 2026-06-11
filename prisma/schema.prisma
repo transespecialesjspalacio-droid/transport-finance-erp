@@ -120,6 +120,7 @@ model Usuario {
 model Cliente {
   id              String   @id @default(uuid())
   empresaId       String   @map("empresa_id")
+  codigo          String?  @map("codigo")
   nombre          String
   rfc             String
   contactoNombre  String?  @map("contacto_nombre")
@@ -247,6 +248,7 @@ model TipoCosto {
 model Tercero {
   id          String      @id @default(uuid())
   empresaId   String      @map("empresa_id")
+  codigo      String?     @map("codigo")
   nombre      String
   rfc         String?
   tipoTercero TipoTercero @default(OTRO) @map("tipo_tercero")

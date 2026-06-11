@@ -1,5 +1,6 @@
 "use client";
 
+import { useMemo } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { contratoSchema, type ContratoFormData } from "../schemas/contrato-schema";
@@ -17,10 +18,16 @@ import {
 
 interface Props {
   defaultValues?: Record<string, unknown>;
-  clientes: { id: string; nombre: string }[];
+  clientes: { id: string; nombre: string; codigo: string | null; rfc: string | null }[];
 }
 
 export function ContratoForm({ defaultValues, clientes }: Props) {
+  const clienteMap = useMemo(() => {
+    const map = new Map<string, { codigo: string | null; rfc: string | null }>();
+    clientes.forEach((c) => map.set(c.id, c));
+    return map;
+  }, [clientes]);
+
   const form = useForm<ContratoFormData>({
     resolver: zodResolver(contratoSchema),
     defaultValues: defaultValues ?? {
@@ -50,7 +57,13 @@ export function ContratoForm({ defaultValues, clientes }: Props) {
         <div className="space-y-2">
           <Label htmlFor="clienteId">Cliente</Label>
           <Select
-            onValueChange={(v) => form.setValue("clienteId", v)}
+            onValueChange={(v) => {
+              form.setValue("clienteId", v);
+              const cliente = clienteMap.get(v);
+              if (cliente) {
+                form.setValue("codigo", cliente.codigo ?? cliente.rfc ?? "");
+              }
+            }}
             defaultValue={defaultValues?.clienteId as string | undefined}
           >
             <SelectTrigger><SelectValue placeholder="Seleccionar..." /></SelectTrigger>
@@ -64,8 +77,7 @@ export function ContratoForm({ defaultValues, clientes }: Props) {
         </div>
         <div className="space-y-2">
           <Label htmlFor="codigo">Código</Label>
-          <Input id="codigo" {...form.register("codigo")} />
-          {form.formState.errors.codigo && <p className="text-xs text-destructive">{form.formState.errors.codigo.message}</p>}
+          <Input id="codigo" {...form.register("codigo")} readOnly />
         </div>
         <div className="space-y-2 sm:col-span-2">
           <Label htmlFor="nombre">Nombre del contrato</Label>

@@ -16,7 +16,7 @@ import {
 } from "@/components/ui/select";
 
 interface Props {
-  defaultValues?: TerceroFormData & { id?: string };
+  defaultValues?: (TerceroFormData & { id?: string }) | undefined;
 }
 
 export function TerceroForm({ defaultValues }: Props) {
@@ -49,6 +49,12 @@ export function TerceroForm({ defaultValues }: Props) {
           <Input id="nombre" {...form.register("nombre")} />
           {form.formState.errors.nombre && <p className="text-xs text-destructive">{form.formState.errors.nombre.message}</p>}
         </div>
+        {defaultValues?.codigo && (
+          <div className="space-y-2">
+            <Label htmlFor="codigo">Código</Label>
+            <Input id="codigo" value={defaultValues.codigo} readOnly />
+          </div>
+        )}
         <div className="space-y-2">
           <Label htmlFor="rfc">RFC</Label>
           <Input id="rfc" {...form.register("rfc")} />
