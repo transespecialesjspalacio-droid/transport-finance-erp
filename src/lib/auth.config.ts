@@ -29,6 +29,11 @@ export const authConfig: NextAuthConfig = {
         token.role = (user as { role?: string }).role;
         token.empresaId = (user as { empresaId?: string }).empresaId;
       }
+      console.log("JWT_DEBUG", {
+        id: token.id,
+        role: token.role,
+        empresaId: token.empresaId,
+      });
       return token;
     },
     session({ session, token }) {
@@ -37,6 +42,11 @@ export const authConfig: NextAuthConfig = {
         session.user.role = token.role as string;
         session.user.empresaId = token.empresaId as string;
       }
+      console.log("SESSION_DEBUG", {
+        id: session.user?.id,
+        role: session.user?.role,
+        empresaId: session.user?.empresaId,
+      });
       return session;
     },
   },
