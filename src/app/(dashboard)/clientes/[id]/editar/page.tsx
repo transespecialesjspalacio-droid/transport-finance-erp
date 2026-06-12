@@ -8,9 +8,9 @@ export default async function EditarClientePage(props: { params: Promise<{ id: s
   const cliente = await getCliente(id);
   if (!cliente) notFound();
 
+  const { codigo, ...rest } = cliente;
   const defaultValues = {
-    ...cliente,
-    codigo: cliente.codigo ?? undefined,
+    ...rest,
     contactoNombre: cliente.contactoNombre ?? undefined,
     contactoEmail: cliente.contactoEmail ?? undefined,
     contactoTelefono: cliente.contactoTelefono ?? undefined,
@@ -20,7 +20,7 @@ export default async function EditarClientePage(props: { params: Promise<{ id: s
   return (
     <div>
       <PageHeader title="Editar cliente" description={cliente.nombre} />
-      <ClienteForm defaultValues={defaultValues} />
+      <ClienteForm defaultValues={defaultValues} codigo={codigo} />
     </div>
   );
 }

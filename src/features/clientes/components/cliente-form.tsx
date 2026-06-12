@@ -1,21 +1,25 @@
 "use client";
 
-import { useForm } from "react-hook-form";
+import { useMemo } from "react";
+import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { clienteSchema, type ClienteFormData } from "../schemas/cliente-schema";
 import { createCliente, updateCliente } from "../server/actions";
+import { generateCodigo } from "@/lib/codigo";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { FormActions } from "@/components/shared/form-actions";
 
 interface Props {
   defaultValues?: ClienteFormData & { id?: string };
+  codigo?: string | null;
 }
 
-export function ClienteForm({ defaultValues }: Props) {
+export function ClienteForm({ defaultValues, codigo }: Props) {
   const {
     register,
     handleSubmit,
+    control,
     formState: { errors },
   } = useForm<ClienteFormData>({
     resolver: zodResolver(clienteSchema),
@@ -23,6 +27,12 @@ export function ClienteForm({ defaultValues }: Props) {
       nombre: "", rfc: "", contactoNombre: "", contactoEmail: "", contactoTelefono: "", direccion: "",
     },
   });
+
+  const nombre = useWatch({ control, name: "nombre" });
+  const codigoPreview = useMemo(() => {
+    if (!nombre || nombre.trim().length < 2) return "";
+    return generateCodigo(nombre, 0).replace(/-0000-/, "-????-");
+  }, [nombre]);
 
   async function onSubmit(data: ClienteFormData) {
     const form = new FormData();
@@ -45,13 +55,11 @@ export function ClienteForm({ defaultValues }: Props) {
           <Label htmlFor="nombre">Nombre</Label>
           <Input id="nombre" {...register("nombre")} />
           {errors.nombre && <p className="text-xs text-destructive">{errors.nombre.message}</p>}
+          {codigo && <p className="text-xs text-muted-foreground">Código: {codigo}</p>}
+          {codigoPreview && !codigo && (
+            <p className="text-xs text-muted-foreground">Código: {codigoPreview}</p>
+          )}
         </div>
-        {defaultValues?.codigo && (
-          <div className="space-y-2">
-            <Label htmlFor="codigo">Código</Label>
-            <Input id="codigo" value={defaultValues.codigo} readOnly />
-          </div>
-        )}
         <div className="space-y-2">
           <Label htmlFor="contactoNombre">Contacto</Label>
           <Input id="contactoNombre" {...register("contactoNombre")} />

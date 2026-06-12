@@ -27,7 +27,7 @@ export function CuentaPagarForm({ defaultValues, terceros, servicios }: Props) {
 
   async function onSubmit(data: CuentaPagarFormData) {
     const form = new FormData();
-    Object.entries(data).forEach(([k, v]) => form.append(k, v ?? ""));
+    Object.entries(data).forEach(([k, v]) => form.append(k, v === "__none__" ? "" : (v ?? "")));
     try {
       const id = defaultValues?.id as string | undefined;
       if (id) {
@@ -60,7 +60,7 @@ export function CuentaPagarForm({ defaultValues, terceros, servicios }: Props) {
           <Select onValueChange={(v) => form.setValue("servicioId", v)} defaultValue={defaultValues?.servicioId as string | undefined}>
             <SelectTrigger><SelectValue placeholder="Sin servicio" /></SelectTrigger>
             <SelectContent>
-              <SelectItem value="">Sin servicio</SelectItem>
+              <SelectItem value="__none__">Sin servicio</SelectItem>
               {servicios.map((s) => (
                 <SelectItem key={s.id} value={s.id}>{new Date(s.fecha).toLocaleDateString()} — {s.origen ?? "?"} → {s.destino ?? "?"}</SelectItem>
               ))}

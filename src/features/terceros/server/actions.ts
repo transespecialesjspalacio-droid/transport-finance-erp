@@ -15,7 +15,7 @@ export async function createTercero(formData: FormData) {
   const parsed = terceroSchema.safeParse(raw);
   if (!parsed.success) throw new Error(parsed.error.issues.map((e: { message: string }) => e.message).join(", "));
 
-  const consecutive = await getNextConsecutive(session.user.empresaId, "tercero", prisma);
+  const consecutive = await getNextConsecutive(session.user.empresaId, prisma);
   const codigo = generateCodigo(parsed.data.nombre, consecutive);
 
   await prisma.tercero.create({

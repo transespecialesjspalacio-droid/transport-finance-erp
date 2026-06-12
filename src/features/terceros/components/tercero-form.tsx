@@ -1,9 +1,11 @@
 "use client";
 
-import { useForm } from "react-hook-form";
+import { useMemo } from "react";
+import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { terceroSchema, type TerceroFormData } from "../schemas/tercero-schema";
 import { createTercero, updateTercero } from "../server/actions";
+import { generateCodigo } from "@/lib/codigo";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { FormActions } from "@/components/shared/form-actions";
@@ -17,15 +19,22 @@ import {
 
 interface Props {
   defaultValues?: (TerceroFormData & { id?: string }) | undefined;
+  codigo?: string | null;
 }
 
-export function TerceroForm({ defaultValues }: Props) {
+export function TerceroForm({ defaultValues, codigo }: Props) {
   const form = useForm<TerceroFormData>({
     resolver: zodResolver(terceroSchema),
     defaultValues: defaultValues ?? {
       nombre: "", rfc: "", tipoTercero: "OTRO", contacto: "",
     },
   });
+
+  const nombre = useWatch({ control: form.control, name: "nombre" });
+  const codigoPreview = useMemo(() => {
+    if (!nombre || nombre.trim().length < 2) return "";
+    return generateCodigo(nombre, 0).replace(/-0000-/, "-????-");
+  }, [nombre]);
 
   async function onSubmit(data: TerceroFormData) {
     const fd = new FormData();
@@ -48,13 +57,11 @@ export function TerceroForm({ defaultValues }: Props) {
           <Label htmlFor="nombre">Nombre</Label>
           <Input id="nombre" {...form.register("nombre")} />
           {form.formState.errors.nombre && <p className="text-xs text-destructive">{form.formState.errors.nombre.message}</p>}
+          {codigo && <p className="text-xs text-muted-foreground">Código: {codigo}</p>}
+          {codigoPreview && !codigo && (
+            <p className="text-xs text-muted-foreground">Código: {codigoPreview}</p>
+          )}
         </div>
-        {defaultValues?.codigo && (
-          <div className="space-y-2">
-            <Label htmlFor="codigo">Código</Label>
-            <Input id="codigo" value={defaultValues.codigo} readOnly />
-          </div>
-        )}
         <div className="space-y-2">
           <Label htmlFor="rfc">RFC</Label>
           <Input id="rfc" {...form.register("rfc")} />

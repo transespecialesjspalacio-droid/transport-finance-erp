@@ -15,7 +15,7 @@ export async function createCliente(formData: FormData) {
   const parsed = clienteSchema.safeParse(raw);
   if (!parsed.success) throw new Error(parsed.error.issues.map((e: { message: string }) => e.message).join(", "));
 
-  const consecutive = await getNextConsecutive(session.user.empresaId, "cliente", prisma);
+  const consecutive = await getNextConsecutive(session.user.empresaId, prisma);
   const codigo = generateCodigo(parsed.data.nombre, consecutive);
   const data = { ...parsed.data, rfc: parsed.data.rfc || codigo, codigo, empresaId: session.user.empresaId };
 

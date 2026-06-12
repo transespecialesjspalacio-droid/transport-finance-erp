@@ -11,15 +11,17 @@ export function generateCodigo(nombre: string, consecutive: number): string {
 
 import type { PrismaClient } from "@prisma/client";
 
+/** Shared global consecutive per empresa across Clientes and Terceros. */
 export async function getNextConsecutive(
   empresaId: string,
-  model: "cliente" | "tercero",
   prisma: PrismaClient
 ): Promise<number> {
-  const table = model === "cliente" ? "clientes" : "terceros";
   const rows: { codigo: string | null }[] =
     await prisma.$queryRawUnsafe(
-      `SELECT codigo FROM "${table}" WHERE "empresa_id" = $1 AND codigo IS NOT NULL ORDER BY codigo DESC LIMIT 1`,
+      `SELECT codigo FROM "clientes" WHERE "empresa_id" = $1 AND codigo IS NOT NULL
+       UNION ALL
+       SELECT codigo FROM "terceros" WHERE "empresa_id" = $1 AND codigo IS NOT NULL
+       ORDER BY codigo DESC LIMIT 1`,
       empresaId
     );
 

@@ -36,7 +36,7 @@ export function ServicioForm({ defaultValues, contratos, vehiculos, conductores 
 
   async function onSubmit(data: ServicioFormData) {
     const form = new FormData();
-    Object.entries(data).forEach(([k, v]) => form.append(k, v ?? ""));
+    Object.entries(data).forEach(([k, v]) => form.append(k, v === "__none__" ? "" : (v ?? "")));
     try {
       const id = defaultValues?.id as string | undefined;
       if (id) {
@@ -97,7 +97,7 @@ export function ServicioForm({ defaultValues, contratos, vehiculos, conductores 
           <Select onValueChange={(v) => form.setValue("vehiculoId", v)} defaultValue={(defaultValues?.vehiculoId as string | undefined) ?? ""}>
             <SelectTrigger><SelectValue placeholder="Sin asignar" /></SelectTrigger>
             <SelectContent>
-              <SelectItem value="">Sin asignar</SelectItem>
+              <SelectItem value="__none__">Sin asignar</SelectItem>
               {vehiculos.map((v) => (
                 <SelectItem key={v.id} value={v.id}>{v.placa} — {v.marca} {v.modelo}</SelectItem>
               ))}
@@ -109,7 +109,7 @@ export function ServicioForm({ defaultValues, contratos, vehiculos, conductores 
           <Select onValueChange={(v) => form.setValue("conductorId", v)} defaultValue={(defaultValues?.conductorId as string | undefined) ?? ""}>
             <SelectTrigger><SelectValue placeholder="Sin asignar" /></SelectTrigger>
             <SelectContent>
-              <SelectItem value="">Sin asignar</SelectItem>
+              <SelectItem value="__none__">Sin asignar</SelectItem>
               {conductores.map((c) => (
                 <SelectItem key={c.id} value={c.id}>{c.nombre}</SelectItem>
               ))}

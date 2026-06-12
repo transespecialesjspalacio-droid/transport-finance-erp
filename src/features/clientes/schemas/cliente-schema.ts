@@ -8,7 +8,7 @@ export const clienteSchema = z.object({
   contactoEmail: z.string().email("Email inválido").optional().or(z.literal("")),
   contactoTelefono: z.string().max(20).optional().or(z.literal("")),
   direccion: z.string().max(250).optional().or(z.literal("")),
-  codigo: z.string().optional(),
+
 });
 
 export type ClienteFormData = z.infer<typeof clienteSchema>;

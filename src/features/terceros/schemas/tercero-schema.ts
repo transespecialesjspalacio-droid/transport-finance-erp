@@ -5,7 +5,7 @@ export const terceroSchema = z.object({
   rfc: z.string().max(13).optional().or(z.literal("")),
   tipoTercero: z.enum(["TRANSPORTADOR", "CONDUCTOR", "COMBUSTIBLE", "PEAJES", "MANTENIMIENTO", "OTRO"]),
   contacto: z.string().max(80).optional().or(z.literal("")),
-  codigo: z.string().optional(),
+
 });
 
 export type TerceroFormData = z.infer<typeof terceroSchema>;
