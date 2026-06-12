@@ -47,6 +47,7 @@ export function ContratoForm({ defaultValues, clientes }: Props) {
         await createContrato(form);
       }
     } catch (e: unknown) {
+      if (e instanceof Error && e.message === "NEXT_REDIRECT") throw e;
       if (e instanceof Error) alert(e.message);
     }
   }

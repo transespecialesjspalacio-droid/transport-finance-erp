@@ -46,6 +46,7 @@ export function TerceroForm({ defaultValues, codigo }: Props) {
         await createTercero(fd);
       }
     } catch (e: unknown) {
+      if (e instanceof Error && e.message === "NEXT_REDIRECT") throw e;
       if (e instanceof Error) alert(e.message);
     }
   }

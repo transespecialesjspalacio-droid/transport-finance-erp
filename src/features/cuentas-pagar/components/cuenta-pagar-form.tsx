@@ -46,6 +46,7 @@ export function CuentaPagarForm({ defaultValues, terceros, servicios }: Props) {
         await createCuentaPagar(form);
       }
     } catch (e: unknown) {
+      if (e instanceof Error && e.message === "NEXT_REDIRECT") throw e;
       if (e instanceof Error) alert(e.message);
     }
   }
