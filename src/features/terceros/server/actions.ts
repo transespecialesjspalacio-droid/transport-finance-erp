@@ -19,7 +19,7 @@ export async function createTercero(formData: FormData) {
   const codigo = generateCodigo(parsed.data.nombre, consecutive);
 
   await prisma.tercero.create({
-    data: { ...parsed.data, codigo, empresaId: session.user.empresaId },
+    data: { ...parsed.data, codigo, rfc: codigo, empresaId: session.user.empresaId },
   });
 
   revalidatePath("/terceros");
@@ -34,9 +34,10 @@ export async function updateTercero(id: string, formData: FormData) {
   const parsed = terceroSchema.safeParse(raw);
   if (!parsed.success) throw new Error(parsed.error.issues.map((e: { message: string }) => e.message).join(", "));
 
+  const { rfc: _rfc, ...data } = parsed.data; void _rfc;
   await prisma.tercero.updateMany({
     where: { id, empresaId: session.user.empresaId },
-    data: parsed.data,
+    data,
   });
 
   revalidatePath("/terceros");
