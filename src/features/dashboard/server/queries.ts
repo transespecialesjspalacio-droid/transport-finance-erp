@@ -43,7 +43,7 @@ export async function getDashboardData() {
       _sum: { saldoPendiente: true },
     }),
     prisma.servicio.findMany({
-      where: { empresaId, estado: "COMPLETADO" },
+      where: { empresaId, estado: { not: "CANCELADO" } },
       include: {
         costos: { select: { total: true } },
         contrato: { select: { cliente: { select: { id: true, nombre: true } } } },
@@ -97,7 +97,7 @@ export async function getDashboardData() {
   const costoPorTercero = new Map<string, { nombre: string; costo: number }>();
 
   const servicios12Meses = await prisma.servicio.findMany({
-    where: { empresaId, fecha: { gte: doceMesesAtras }, estado: "COMPLETADO" },
+    where: { empresaId, fecha: { gte: doceMesesAtras }, estado: { not: "CANCELADO" } },
     include: {
       costos: { include: { tercero: { select: { id: true, nombre: true } } } },
       contrato: { select: { id: true, nombre: true, cliente: { select: { id: true, nombre: true } } } },
@@ -185,7 +185,7 @@ export async function getDashboardData() {
 
 async function getIngresosCostosPorMes(empresaId: string, desde: Date) {
   const servicios = await prisma.servicio.findMany({
-    where: { empresaId, fecha: { gte: desde }, estado: "COMPLETADO" },
+    where: { empresaId, fecha: { gte: desde }, estado: { not: "CANCELADO" } },
     include: { costos: { select: { total: true } } },
   });
 
@@ -210,7 +210,7 @@ async function getIngresosCostosPorMes(empresaId: string, desde: Date) {
 
 async function getServicioMasRentable(empresaId: string) {
   const servicios = await prisma.servicio.findMany({
-    where: { empresaId, estado: "COMPLETADO" },
+    where: { empresaId, estado: { not: "CANCELADO" } },
     include: {
       costos: { select: { total: true } },
       contrato: { select: { nombre: true, cliente: { select: { nombre: true } } } },
