@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { cuentaCobrarSchema, type CuentaCobrarFormData } from "../schemas/cuenta-cobrar-schema";
@@ -19,6 +20,7 @@ interface Props {
 }
 
 export function CuentaCobrarForm({ defaultValues, clientes, contratos, servicios }: Props) {
+  const [facturaPreview, setFacturaPreview] = useState<string>("");
   const form = useForm<CuentaCobrarFormData>({
     resolver: zodResolver(cuentaCobrarSchema),
     defaultValues: defaultValues ?? {
@@ -26,6 +28,16 @@ export function CuentaCobrarForm({ defaultValues, clientes, contratos, servicios
       montoTotal: "", fechaEmision: "", fechaVencimiento: "",
     },
   });
+
+  useEffect(() => {
+    if (defaultValues?.facturaId) {
+      setFacturaPreview(defaultValues.facturaId as string);
+    } else {
+      import("../server/actions").then((m) =>
+        m.getNextFacturaPreview().then(setFacturaPreview)
+      );
+    }
+  }, [defaultValues]);
 
   async function onSubmit(data: CuentaCobrarFormData) {
     const form = new FormData();
@@ -82,8 +94,8 @@ export function CuentaCobrarForm({ defaultValues, clientes, contratos, servicios
           </Select>
         </div>
         <div className="space-y-2">
-          <Label htmlFor="facturaId">Número de factura</Label>
-          <Input id="facturaId" {...form.register("facturaId")} />
+          <Label htmlFor="facturaId">Factura</Label>
+          <Input id="facturaId" value={facturaPreview} readOnly />
         </div>
         <div className="space-y-2">
           <Label htmlFor="montoTotal">Valor total</Label>

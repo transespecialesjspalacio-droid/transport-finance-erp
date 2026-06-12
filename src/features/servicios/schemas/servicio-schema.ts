@@ -1,6 +1,7 @@
 import { z } from "zod";
 
 export const servicioSchema = z.object({
+  codigo: z.string().optional().or(z.literal("")),
   contratoId: z.string().min(1, "Selecciona un contrato"),
   vehiculoId: z.string().optional().or(z.literal("")),
   conductorId: z.string().optional().or(z.literal("")),

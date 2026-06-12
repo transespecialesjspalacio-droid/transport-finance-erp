@@ -1,6 +1,7 @@
 import { z } from "zod";
 
 export const cuentaPagarSchema = z.object({
+  numero: z.string().optional().or(z.literal("")),
   terceroId: z.string().min(1, "Selecciona un tercero"),
   servicioId: z.string().optional().or(z.literal("")),
   montoTotal: z.string().min(1, "Ingresa el monto total"),

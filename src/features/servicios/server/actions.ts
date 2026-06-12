@@ -6,6 +6,24 @@ import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import { servicioSchema } from "../schemas/servicio-schema";
 
+export async function getNextServicioCodigo() {
+  const session = await auth();
+  if (!session?.user?.empresaId) return 1;
+
+  const rows: { codigo: string | null }[] = await prisma.$queryRawUnsafe(
+    `SELECT codigo FROM "servicios"
+     WHERE "empresa_id" = $1 AND codigo IS NOT NULL
+     ORDER BY codigo DESC LIMIT 1`,
+    session.user.empresaId
+  );
+
+  const latest = rows[0]?.codigo;
+  if (!latest) return 1;
+
+  const match = latest.match(/SER-(\d+)/);
+  return match ? parseInt(match[1], 10) + 1 : 1;
+}
+
 export async function createServicio(formData: FormData) {
   const session = await auth();
   if (!session?.user?.empresaId) throw new Error("No autorizado");
@@ -14,11 +32,22 @@ export async function createServicio(formData: FormData) {
   const parsed = servicioSchema.safeParse(raw);
   if (!parsed.success) throw new Error(parsed.error.issues.map((e: { message: string }) => e.message).join(", "));
 
-  const { fecha, horaInicio, horaFin, distanciaKm, kmRecorridos, tarifaAplicada, ingresoEsperado, ingresoReal, vehiculoId, conductorId, ...rest } = parsed.data;
+  const { fecha, horaInicio, horaFin, distanciaKm, kmRecorridos, tarifaAplicada, ingresoEsperado, ingresoReal, vehiculoId, conductorId, codigo: _codigo, ...rest } = parsed.data; void _codigo;
+
+  const rows: { codigo: string | null }[] = await prisma.$queryRawUnsafe(
+    `SELECT codigo FROM "servicios"
+     WHERE "empresa_id" = $1 AND codigo IS NOT NULL
+     ORDER BY codigo DESC LIMIT 1`,
+    session.user.empresaId
+  );
+  const latest = rows[0]?.codigo;
+  const consecutive = latest ? (parseInt(latest.match(/SER-(\d+)/)?.[1] ?? "0", 10) + 1) : 1;
+  const codigo = `SER-${String(consecutive).padStart(6, "0")}`;
 
   await prisma.servicio.create({
     data: {
       ...rest,
+      codigo,
       empresaId: session.user.empresaId,
       vehiculoId: vehiculoId || null,
       conductorId: conductorId || null,
@@ -45,7 +74,7 @@ export async function updateServicio(id: string, formData: FormData) {
   const parsed = servicioSchema.safeParse(raw);
   if (!parsed.success) throw new Error(parsed.error.issues.map((e: { message: string }) => e.message).join(", "));
 
-  const { fecha, horaInicio, horaFin, distanciaKm, kmRecorridos, tarifaAplicada, ingresoEsperado, ingresoReal, vehiculoId, conductorId, ...rest } = parsed.data;
+  const { fecha, horaInicio, horaFin, distanciaKm, kmRecorridos, tarifaAplicada, ingresoEsperado, ingresoReal, vehiculoId, conductorId, codigo: _codigo, ...rest } = parsed.data; void _codigo;
 
   await prisma.servicio.updateMany({
     where: { id, empresaId: session.user.empresaId },

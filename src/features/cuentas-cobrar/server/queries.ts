@@ -97,6 +97,24 @@ export async function getContratosOptions() {
   });
 }
 
+export async function getNextFacturaConsecutivo() {
+  const session = await auth();
+  if (!session?.user?.empresaId) return 1;
+
+  const rows: { facturaId: string | null }[] = await prisma.$queryRawUnsafe(
+    `SELECT factura_id AS "facturaId" FROM "cuentas_cobrar"
+     WHERE "empresa_id" = $1 AND factura_id IS NOT NULL
+     ORDER BY factura_id DESC LIMIT 1`,
+    session.user.empresaId
+  );
+
+  const latest = rows[0]?.facturaId;
+  if (!latest) return 1;
+
+  const match = latest.match(/FAC-(\d+)/);
+  return match ? parseInt(match[1], 10) + 1 : 1;
+}
+
 export async function getServiciosOptions() {
   const session = await auth();
   if (!session?.user?.empresaId) return [];

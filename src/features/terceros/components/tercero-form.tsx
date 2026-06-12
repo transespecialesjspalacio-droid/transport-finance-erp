@@ -26,7 +26,7 @@ export function TerceroForm({ defaultValues, codigo }: Props) {
   const form = useForm<TerceroFormData>({
     resolver: zodResolver(terceroSchema),
     defaultValues: defaultValues ?? {
-      nombre: "", rfc: "", tipoTercero: "OTRO", contacto: "",
+      nombre: "", tipoTercero: "OTRO", contacto: "",
     },
   });
 
@@ -61,10 +61,6 @@ export function TerceroForm({ defaultValues, codigo }: Props) {
           {codigoPreview && !codigo && (
             <p className="text-xs text-muted-foreground">Código: {codigoPreview}</p>
           )}
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="rfc">RFC</Label>
-          <Input id="rfc" {...form.register("rfc")} />
         </div>
         <div className="space-y-2">
           <Label htmlFor="tipoTercero">Tipo</Label>

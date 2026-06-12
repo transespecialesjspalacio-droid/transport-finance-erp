@@ -169,6 +169,7 @@ model Contrato {
 
 model Servicio {
   id             String          @id @default(uuid())
+  codigo         String?         @map("codigo")
   contratoId     String          @map("contrato_id")
   empresaId      String          @map("empresa_id")
   vehiculoId     String?         @map("vehiculo_id")
@@ -310,6 +311,7 @@ model Cobro {
 
 model CuentaPagar {
   id              String         @id @default(uuid())
+  numero          String?        @map("numero")
   empresaId       String         @map("empresa_id")
   terceroId       String         @map("tercero_id")
   servicioId      String?        @map("servicio_id")

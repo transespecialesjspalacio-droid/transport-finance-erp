@@ -6,6 +6,24 @@ import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import { cuentaPagarSchema, pagoSchema } from "../schemas/cuenta-pagar-schema";
 
+export async function getNextCuentaPagarNumero() {
+  const session = await auth();
+  if (!session?.user?.empresaId) return 1;
+
+  const rows: { numero: string | null }[] = await prisma.$queryRawUnsafe(
+    `SELECT numero FROM "cuentas_pagar"
+     WHERE "empresa_id" = $1 AND numero IS NOT NULL
+     ORDER BY numero DESC LIMIT 1`,
+    session.user.empresaId
+  );
+
+  const latest = rows[0]?.numero;
+  if (!latest) return 1;
+
+  const match = latest.match(/CXP-(\d+)/);
+  return match ? parseInt(match[1], 10) + 1 : 1;
+}
+
 export async function createCuentaPagar(formData: FormData) {
   const session = await auth();
   if (!session?.user?.empresaId) throw new Error("No autorizado");
@@ -17,11 +35,22 @@ export async function createCuentaPagar(formData: FormData) {
   const montoTotal = parseFloat(parsed.data.montoTotal);
   if (isNaN(montoTotal) || montoTotal <= 0) throw new Error("Monto total inválido");
 
+  const rows: { numero: string | null }[] = await prisma.$queryRawUnsafe(
+    `SELECT numero FROM "cuentas_pagar"
+     WHERE "empresa_id" = $1 AND numero IS NOT NULL
+     ORDER BY numero DESC LIMIT 1`,
+    session.user.empresaId
+  );
+  const latest = rows[0]?.numero;
+  const consecutive = latest ? (parseInt(latest.match(/CXP-(\d+)/)?.[1] ?? "0", 10) + 1) : 1;
+  const numero = `CXP-${String(consecutive).padStart(6, "0")}`;
+
   await prisma.cuentaPagar.create({
     data: {
       empresaId: session.user.empresaId,
       terceroId: parsed.data.terceroId,
       servicioId: parsed.data.servicioId || null,
+      numero,
       montoTotal,
       saldoPendiente: montoTotal,
       fechaEmision: new Date(parsed.data.fechaEmision),

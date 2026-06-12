@@ -6,6 +6,22 @@ import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import { cuentaCobrarSchema, cobroSchema } from "../schemas/cuenta-cobrar-schema";
 
+export async function getNextFacturaPreview() {
+  const session = await auth();
+  if (!session?.user?.empresaId) return "";
+
+  const rows: { facturaId: string | null }[] = await prisma.$queryRawUnsafe(
+    `SELECT factura_id AS "facturaId" FROM "cuentas_cobrar"
+     WHERE "empresa_id" = $1 AND factura_id IS NOT NULL
+     ORDER BY factura_id DESC LIMIT 1`,
+    session.user.empresaId
+  );
+
+  const latest = rows[0]?.facturaId;
+  const consecutive = latest ? (parseInt(latest.match(/FAC-(\d+)/)?.[1] ?? "0", 10) + 1) : 1;
+  return `FAC-${String(consecutive).padStart(6, "0")}`;
+}
+
 export async function createCuentaCobrar(formData: FormData) {
   const session = await auth();
   if (!session?.user?.empresaId) throw new Error("No autorizado");
@@ -17,13 +33,23 @@ export async function createCuentaCobrar(formData: FormData) {
   const montoTotal = parseFloat(parsed.data.montoTotal);
   if (isNaN(montoTotal) || montoTotal <= 0) throw new Error("Monto total inválido");
 
+  const rows: { facturaId: string | null }[] = await prisma.$queryRawUnsafe(
+    `SELECT factura_id AS "facturaId" FROM "cuentas_cobrar"
+     WHERE "empresa_id" = $1 AND factura_id IS NOT NULL
+     ORDER BY factura_id DESC LIMIT 1`,
+    session.user.empresaId
+  );
+  const latest = rows[0]?.facturaId;
+  const consecutive = latest ? (parseInt(latest.match(/FAC-(\d+)/)?.[1] ?? "0", 10) + 1) : 1;
+  const facturaId = `FAC-${String(consecutive).padStart(6, "0")}`;
+
   await prisma.cuentaCobrar.create({
     data: {
       empresaId: session.user.empresaId,
       clienteId: parsed.data.clienteId,
       contratoId: parsed.data.contratoId,
       servicioId: parsed.data.servicioId || null,
-      facturaId: parsed.data.facturaId || null,
+      facturaId,
       montoTotal,
       saldoPendiente: montoTotal,
       fechaEmision: new Date(parsed.data.fechaEmision),
@@ -65,7 +91,6 @@ export async function updateCuentaCobrar(id: string, formData: FormData) {
       clienteId: parsed.data.clienteId,
       contratoId: parsed.data.contratoId,
       servicioId: parsed.data.servicioId || null,
-      facturaId: parsed.data.facturaId || null,
       montoTotal,
       saldoPendiente: nuevoSaldo,
       fechaEmision: new Date(parsed.data.fechaEmision),

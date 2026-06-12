@@ -1,9 +1,10 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { cuentaPagarSchema, type CuentaPagarFormData } from "../schemas/cuenta-pagar-schema";
-import { createCuentaPagar, updateCuentaPagar } from "../server/actions";
+import { createCuentaPagar, updateCuentaPagar, getNextCuentaPagarNumero } from "../server/actions";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { FormActions } from "@/components/shared/form-actions";
@@ -18,12 +19,21 @@ interface Props {
 }
 
 export function CuentaPagarForm({ defaultValues, terceros, servicios }: Props) {
+  const [numeroPreview, setNumeroPreview] = useState("");
   const form = useForm<CuentaPagarFormData>({
     resolver: zodResolver(cuentaPagarSchema),
     defaultValues: defaultValues ?? {
       terceroId: "", servicioId: "", montoTotal: "", fechaEmision: "", fechaVencimiento: "",
     },
   });
+
+  useEffect(() => {
+    if (defaultValues?.numero) {
+      setNumeroPreview(defaultValues.numero as string);
+    } else {
+      getNextCuentaPagarNumero().then((n) => setNumeroPreview(`CXP-${String(n).padStart(6, "0")}`));
+    }
+  }, [defaultValues]);
 
   async function onSubmit(data: CuentaPagarFormData) {
     const form = new FormData();
@@ -43,6 +53,10 @@ export function CuentaPagarForm({ defaultValues, terceros, servicios }: Props) {
   return (
     <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
       <div className="grid gap-4 sm:grid-cols-2">
+        <div className="space-y-2">
+          <Label htmlFor="numero">Número</Label>
+          <Input id="numero" value={numeroPreview} readOnly />
+        </div>
         <div className="space-y-2">
           <Label htmlFor="terceroId">Tercero</Label>
           <Select onValueChange={(v) => form.setValue("terceroId", v)} defaultValue={defaultValues?.terceroId as string | undefined}>

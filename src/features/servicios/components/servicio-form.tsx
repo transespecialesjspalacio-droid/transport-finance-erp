@@ -1,9 +1,10 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { servicioSchema, type ServicioFormData } from "../schemas/servicio-schema";
-import { createServicio, updateServicio } from "../server/actions";
+import { createServicio, updateServicio, getNextServicioCodigo } from "../server/actions";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { FormActions } from "@/components/shared/form-actions";
@@ -23,6 +24,7 @@ interface Props {
 }
 
 export function ServicioForm({ defaultValues, contratos, vehiculos, conductores }: Props) {
+  const [codigoPreview, setCodigoPreview] = useState("");
   const form = useForm<ServicioFormData>({
     resolver: zodResolver(servicioSchema),
     defaultValues: defaultValues ?? {
@@ -33,6 +35,14 @@ export function ServicioForm({ defaultValues, contratos, vehiculos, conductores 
       estado: "PROGRAMADO", notas: "",
     },
   });
+
+  useEffect(() => {
+    if (defaultValues?.codigo) {
+      setCodigoPreview(defaultValues.codigo as string);
+    } else {
+      getNextServicioCodigo().then((n) => setCodigoPreview(`SER-${String(n).padStart(6, "0")}`));
+    }
+  }, [defaultValues]);
 
   async function onSubmit(data: ServicioFormData) {
     const form = new FormData();
@@ -52,6 +62,10 @@ export function ServicioForm({ defaultValues, contratos, vehiculos, conductores 
   return (
     <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
       <div className="grid gap-4 sm:grid-cols-2">
+        <div className="space-y-2">
+          <Label htmlFor="codigo">Código</Label>
+          <Input id="codigo" value={codigoPreview} readOnly />
+        </div>
         <div className="space-y-2">
           <Label htmlFor="contratoId">Contrato</Label>
           <Select onValueChange={(v) => form.setValue("contratoId", v)} defaultValue={defaultValues?.contratoId as string | undefined}>
