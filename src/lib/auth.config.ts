@@ -1,29 +1,11 @@
+import { authMiddlewareConfig } from "./auth.middleware";
 import type { NextAuthConfig } from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 
 export const authConfig: NextAuthConfig = {
-  pages: {
-    signIn: "/login",
-  },
+  ...authMiddlewareConfig,
   callbacks: {
-    authorized({ auth, request: { nextUrl } }) {
-      const isLoggedIn = !!auth?.user;
-      const isOnDashboard = nextUrl.pathname.startsWith("/dashboard") || 
-        ["/clientes", "/contratos", "/servicios", "/costos", "/proveedores",
-         "/vehiculos", "/conductores", "/terceros", "/cuentas-cobrar", "/cuentas-pagar",
-         "/flujo-caja", "/reportes"].some(p => nextUrl.pathname.startsWith(p));
-      
-      if (isOnDashboard) {
-        if (isLoggedIn) return true;
-        return false;
-      }
-      
-      if (isLoggedIn && nextUrl.pathname === "/login") {
-        return Response.redirect(new URL("/dashboard", nextUrl));
-      }
-      
-      return true;
-    },
+    ...authMiddlewareConfig.callbacks,
     jwt({ token, user }) {
       if (user) {
         token.id = user.id;
