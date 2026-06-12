@@ -78,7 +78,7 @@ export async function getTercerosOptions() {
 
   return prisma.tercero.findMany({
     where: { empresaId: session.user.empresaId, active: true },
-    select: { id: true, nombre: true },
+    select: { id: true, nombre: true, codigo: true },
     orderBy: { nombre: "asc" },
   });
 }

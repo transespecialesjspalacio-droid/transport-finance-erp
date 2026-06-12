@@ -26,7 +26,7 @@ export async function getContratos(params: { q?: string; page?: string; tipo?: s
   const [data, total] = await Promise.all([
     prisma.contrato.findMany({
       where,
-      include: { cliente: { select: { nombre: true } } },
+      include: { cliente: { select: { nombre: true, codigo: true } } },
       skip: (page - 1) * ITEMS_PER_PAGE,
       take: ITEMS_PER_PAGE,
       orderBy: { createdAt: "desc" },
@@ -43,7 +43,7 @@ export async function getContrato(id: string) {
 
   return prisma.contrato.findFirst({
     where: { id, empresaId: session.user.empresaId },
-    include: { cliente: { select: { nombre: true, id: true } } },
+    include: { cliente: { select: { nombre: true, id: true, codigo: true, rfc: true } } },
   });
 }
 

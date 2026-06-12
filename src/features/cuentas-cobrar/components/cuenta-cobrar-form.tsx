@@ -13,7 +13,7 @@ import {
 
 interface Props {
   defaultValues?: Record<string, unknown>;
-  clientes: { id: string; nombre: string }[];
+  clientes: { id: string; nombre: string; codigo: string | null; rfc: string | null }[];
   contratos: { id: string; nombre: string; codigo: string }[];
   servicios: { id: string; fecha: Date; origen: string | null; destino: string | null }[];
 }

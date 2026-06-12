@@ -81,7 +81,7 @@ export async function getClientesOptions() {
 
   return prisma.cliente.findMany({
     where: { empresaId: session.user.empresaId, active: true },
-    select: { id: true, nombre: true },
+    select: { id: true, nombre: true, codigo: true, rfc: true },
     orderBy: { nombre: "asc" },
   });
 }
