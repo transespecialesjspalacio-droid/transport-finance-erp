@@ -73,6 +73,33 @@ enum TipoFlujoCaja {
   PROYECTADO
 }
 
+enum TipoVehiculo {
+  CAMION
+  CAMIONETA
+  TRAILER
+  VOLQUETE
+  GRUA
+  OTRO
+}
+
+enum PropietarioVehiculo {
+  PROPIO
+  TERCERO
+}
+
+enum EstadoVehiculo {
+  DISPONIBLE
+  EN_SERVICIO
+  EN_MANTENIMIENTO
+  FUERA_DE_SERVICIO
+}
+
+enum EstadoConductor {
+  DISPONIBLE
+  EN_SERVICIO
+  DE_BAJA
+}
+
 model Empresa {
   id        String   @id @default(uuid())
   nombre    String
@@ -350,15 +377,19 @@ model Pago {
 }
 
 model Vehiculo {
-  id         String   @id @default(uuid())
-  empresaId  String   @map("empresa_id")
-  placa      String   @unique
-  marca      String
-  modelo     String
-  anio       Int
-  capacidad  Int
-  active     Boolean  @default(true)
-  createdAt  DateTime @default(now()) @map("created_at")
+  id           String              @id @default(uuid())
+  empresaId    String              @map("empresa_id")
+  placa        String              @unique
+  marca        String
+  modelo       String
+  anio         Int
+  capacidad    Int
+  tipoVehiculo TipoVehiculo        @default(OTRO) @map("tipo_vehiculo")
+  propietario  PropietarioVehiculo @default(PROPIO)
+  estado       EstadoVehiculo      @default(DISPONIBLE)
+  active       Boolean             @default(true)
+  createdAt    DateTime            @default(now()) @map("created_at")
+  updatedAt    DateTime            @updatedAt @default(now()) @map("updated_at")
 
   empresa   Empresa    @relation(fields: [empresaId], references: [id], onDelete: Cascade)
   servicios Servicio[]
@@ -368,13 +399,18 @@ model Vehiculo {
 }
 
 model Conductor {
-  id        String   @id @default(uuid())
-  empresaId String   @map("empresa_id")
-  nombre    String
-  licencia  String
-  telefono  String
-  active    Boolean  @default(true)
-  createdAt DateTime @default(now()) @map("created_at")
+  id              String           @id @default(uuid())
+  empresaId       String           @map("empresa_id")
+  nombre          String
+  documento       String?          @map("documento")
+  licencia        String
+  categoria       String?          @map("categoria")
+  telefono        String?
+  fechaVencimiento DateTime?       @map("fecha_vencimiento")
+  estado          EstadoConductor  @default(DISPONIBLE)
+  active          Boolean          @default(true)
+  createdAt       DateTime         @default(now()) @map("created_at")
+  updatedAt       DateTime         @updatedAt @default(now()) @map("updated_at")
 
   empresa   Empresa    @relation(fields: [empresaId], references: [id], onDelete: Cascade)
   servicios Servicio[]

@@ -1,0 +1,112 @@
+import { prisma } from "@/lib/prisma";
+
+export interface ReporteServicio {
+  id: string; codigo: string | null; fecha: Date; contrato: string; cliente: string;
+  vehiculo: string | null; conductor: string | null; origen: string | null; destino: string | null;
+  ingresoEsperado: number; ingresoReal: number | null; costos: number; estado: string;
+}
+
+export async function getReporteServicios(empresaId: string, desde: Date, hasta: Date): Promise<ReporteServicio[]> {
+  const servicios = await prisma.servicio.findMany({
+    where: { empresaId, fecha: { gte: desde, lte: hasta }, estado: { not: "CANCELADO" } },
+    include: {
+      contrato: { select: { nombre: true, cliente: { select: { nombre: true } } } },
+      vehiculo: { select: { placa: true } },
+      conductor: { select: { nombre: true } },
+      costos: { select: { total: true } },
+    },
+    orderBy: { fecha: "desc" },
+  });
+  return servicios.map(s => ({
+    id: s.id, codigo: s.codigo, fecha: s.fecha, contrato: s.contrato.nombre,
+    cliente: s.contrato.cliente.nombre, vehiculo: s.vehiculo?.placa ?? null,
+    conductor: s.conductor?.nombre ?? null, origen: s.origen, destino: s.destino,
+    ingresoEsperado: Number(s.ingresoEsperado), ingresoReal: s.ingresoReal ? Number(s.ingresoReal) : null,
+    costos: s.costos.reduce((sum, c) => sum + Number(c.total), 0), estado: s.estado,
+  }));
+}
+
+export async function getReporteClientes(empresaId: string) {
+  const clientes = await prisma.cliente.findMany({
+    where: { empresaId, active: true },
+    include: {
+      contratos: { where: { active: true }, select: { id: true, nombre: true } },
+      cuentasCobrar: { where: { estado: { not: "PAGADO" } }, select: { saldoPendiente: true } },
+    },
+    orderBy: { nombre: "asc" },
+  });
+  return clientes.map(c => ({
+    id: c.id, nombre: c.nombre, rfc: c.rfc, contratos: c.contratos.length,
+    saldoPendiente: c.cuentasCobrar.reduce((s, cc) => s + Number(cc.saldoPendiente), 0),
+  }));
+}
+
+export async function getReporteContratos(empresaId: string) {
+  const contratos = await prisma.contrato.findMany({
+    where: { empresaId, active: true },
+    include: {
+      cliente: { select: { nombre: true } },
+      servicios: {
+        where: { estado: { not: "CANCELADO" } },
+        select: { id: true, ingresoEsperado: true, ingresoReal: true },
+      },
+    },
+    orderBy: { nombre: "asc" },
+  });
+  return contratos.map(c => ({
+    id: c.id, nombre: c.nombre, cliente: c.cliente.nombre, codigo: c.codigo,
+    tipoServicio: c.tipoServicio, servicios: c.servicios.length,
+    ingresos: c.servicios.reduce((s, sv) => s + Number(sv.ingresoReal ?? sv.ingresoEsperado), 0),
+  }));
+}
+
+export async function getReporteCuentasCobrar(empresaId: string) {
+  const cuentas = await prisma.cuentaCobrar.findMany({
+    where: { empresaId },
+    include: { cliente: { select: { nombre: true } }, contrato: { select: { nombre: true } } },
+    orderBy: { fechaVencimiento: "desc" },
+  });
+  return cuentas.map(c => ({
+    id: c.id, facturaId: c.facturaId, cliente: c.cliente.nombre, contrato: c.contrato.nombre,
+    montoTotal: Number(c.montoTotal), saldoPendiente: Number(c.saldoPendiente),
+    fechaEmision: c.fechaEmision, fechaVencimiento: c.fechaVencimiento, estado: c.estado,
+  }));
+}
+
+export async function getReporteCuentasPagar(empresaId: string) {
+  const cuentas = await prisma.cuentaPagar.findMany({
+    where: { empresaId },
+    include: { tercero: { select: { nombre: true } } },
+    orderBy: { fechaVencimiento: "desc" },
+  });
+  return cuentas.map(c => ({
+    id: c.id, numero: c.numero, tercero: c.tercero.nombre,
+    montoTotal: Number(c.montoTotal), saldoPendiente: Number(c.saldoPendiente),
+    fechaEmision: c.fechaEmision, fechaVencimiento: c.fechaVencimiento, estado: c.estado,
+  }));
+}
+
+export async function getReporteRentabilidad(empresaId: string, desde: Date, hasta: Date) {
+  const servicios = await prisma.servicio.findMany({
+    where: { empresaId, fecha: { gte: desde, lte: hasta }, estado: "COMPLETADO" },
+    include: {
+      contrato: { select: { nombre: true, cliente: { select: { nombre: true } } } },
+      costos: { select: { total: true } },
+    },
+    orderBy: { fecha: "desc" },
+  });
+  const totalIngresos = servicios.reduce((s, sv) => s + Number(sv.ingresoReal ?? sv.ingresoEsperado), 0);
+  const totalCostos = servicios.reduce((s, sv) => s + sv.costos.reduce((c, co) => c + Number(co.total), 0), 0);
+  return {
+    servicios: servicios.map(sv => {
+      const ingreso = Number(sv.ingresoReal ?? sv.ingresoEsperado);
+      const costos = sv.costos.reduce((c, co) => c + Number(co.total), 0);
+      return {
+        id: sv.id, fecha: sv.fecha, contrato: sv.contrato.nombre, cliente: sv.contrato.cliente.nombre,
+        ingreso, costos, utilidad: ingreso - costos,
+        margen: ingreso > 0 ? ((ingreso - costos) / ingreso) * 100 : 0,
+      };
+    }),
+    totales: { ingresos: totalIngresos, costos: totalCostos, utilidad: totalIngresos - totalCostos },
+  };
+}
