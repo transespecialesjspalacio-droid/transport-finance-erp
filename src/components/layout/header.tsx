@@ -11,12 +11,14 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Sun, Moon, LogOut, User } from "lucide-react";
+import { Sun, Moon, LogOut, User, Menu } from "lucide-react";
 import { useSession, signOut } from "next-auth/react";
+import { useSidebar } from "./sidebar-context";
 
 export function Header() {
   const { theme, setTheme } = useTheme();
   const { data: session } = useSession();
+  const { toggleMobile } = useSidebar();
 
   const initials = session?.user?.name
     ? session.user.name
@@ -29,6 +31,9 @@ export function Header() {
 
   return (
     <header className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b bg-background px-4 sm:px-6">
+      <Button variant="ghost" size="icon" className="md:hidden" onClick={toggleMobile}>
+        <Menu className="h-5 w-5" />
+      </Button>
       <div className="flex-1" />
       <Button
         variant="ghost"

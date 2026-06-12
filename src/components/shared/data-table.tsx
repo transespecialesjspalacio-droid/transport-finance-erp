@@ -33,7 +33,7 @@ export function DataTable<T extends { id: string }>({
 }: DataTableProps<T>) {
   if (loading) {
     return (
-      <div className="rounded-md border">
+      <div className="rounded-md border overflow-x-auto">
         <Table>
           <TableHeader>
             <TableRow>
@@ -68,7 +68,7 @@ export function DataTable<T extends { id: string }>({
   }
 
   return (
-    <div className="rounded-md border">
+    <div className="rounded-md border overflow-x-auto">
       <Table>
         <TableHeader>
           <TableRow>
