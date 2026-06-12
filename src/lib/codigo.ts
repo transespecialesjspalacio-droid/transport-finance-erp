@@ -16,10 +16,10 @@ export async function getNextConsecutive(
   model: "cliente" | "tercero",
   prisma: PrismaClient
 ): Promise<number> {
-  const table = model === "cliente" ? "Cliente" : "Tercero";
+  const table = model === "cliente" ? "clientes" : "terceros";
   const rows: { codigo: string | null }[] =
     await prisma.$queryRawUnsafe(
-      `SELECT codigo FROM "${table}" WHERE "empresaId" = $1 AND codigo IS NOT NULL ORDER BY codigo DESC LIMIT 1`,
+      `SELECT codigo FROM "${table}" WHERE "empresa_id" = $1 AND codigo IS NOT NULL ORDER BY codigo DESC LIMIT 1`,
       empresaId
     );
 
