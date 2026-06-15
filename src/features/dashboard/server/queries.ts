@@ -23,6 +23,8 @@ export async function getDashboardData() {
     serviciosDelMes,
     clientesActivos,
     contratosVigentes,
+    ingresosRecurrentesAgg,
+    rentabilidadBaseAgg,
     flujoCaja,
     indicadores,
   ] = await Promise.all([
@@ -64,11 +66,19 @@ export async function getDashboardData() {
     }),
     prisma.cliente.count({ where: { empresaId, active: true } }),
     prisma.contrato.count({ where: { empresaId, active: true } }),
+    prisma.contrato.aggregate({
+      where: { empresaId, active: true, tipoContrato: { in: ["RECURRENTE", "MIXTO"] } },
+      _sum: { valorRecurrente: true },
+    }),
+    prisma.contrato.aggregate({
+      where: { empresaId, active: true, tipoContrato: "MIXTO" },
+      _sum: { rentabilidadBase: true },
+    }),
     getFlujoCajaProyectado("mes"),
     getIndicadoresFinancieros(),
   ]);
 
-  const totalFacturado = Number(totalFacturadoMes._sum?.ingresoEsperado ?? 0);
+  const ingresosServicios = Number(totalFacturadoMes._sum?.ingresoEsperado ?? 0);
 
   const serviciosHoyArray = serviciosHoy;
   const enCurso = serviciosHoyArray.filter((s) => s.estado === "EN_CURSO").length;
@@ -133,11 +143,13 @@ export async function getDashboardData() {
 
   return {
     kpis: {
-      totalFacturado,
+      ingresosServicios,
+      ingresosRecurrentes: Number(ingresosRecurrentesAgg._sum?.valorRecurrente ?? 0),
+      rentabilidadBase: Number(rentabilidadBaseAgg._sum?.rentabilidadBase ?? 0),
       totalCobrado: Number(totalCobrado._sum?.monto ?? 0),
       totalPorCobrar: Number(totalPorCobrarAgg._sum?.saldoPendiente ?? 0),
       totalPorPagar: Number(totalPorPagarAgg._sum?.saldoPendiente ?? 0),
-      utilidadAcumulada: utilidadTotal,
+      utilidadTotal,
       cajaProyectada: flujoCaja.indicadores.cajaNetaProyectada,
       margenPromedio,
       serviciosDelMes,

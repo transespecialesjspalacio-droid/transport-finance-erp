@@ -131,6 +131,52 @@ export async function getFlujoCajaProyectado(periodo: Periodo = "mes"): Promise<
     });
   }
 
+  // Recurring contract projected income
+  const contratosRecurrentes = await prisma.contrato.findMany({
+    where: {
+      empresaId,
+      active: true,
+      tipoContrato: { in: ["RECURRENTE", "MIXTO"] },
+      valorRecurrente: { not: null, gt: 0 },
+    },
+    select: {
+      id: true,
+      codigo: true,
+      nombre: true,
+      cliente: { select: { nombre: true } },
+      valorRecurrente: true,
+      periodicidad: true,
+      diaCorte: true,
+      fechaInicio: true,
+    },
+  });
+
+  const hoy = new Date();
+  const inicioProyeccion = new Date(Math.max(start.getTime(), hoy.getTime()));
+
+  for (const c of contratosRecurrentes) {
+    const valor = Number(c.valorRecurrente);
+    if (valor <= 0) continue;
+
+    const diaCorte = c.diaCorte ?? 1;
+    const fechasPago = generarFechasRecurrencia(inicioProyeccion, end, c.periodicidad as string, diaCorte, c.fechaInicio);
+
+    let index = 0;
+    for (const fecha of fechasPago) {
+      index++;
+      totalEntradas += valor;
+      entries.push({
+        id: `recurrente-${c.id}-${index}`,
+        fecha,
+        concepto: `${c.cliente.nombre} - ${c.nombre}`,
+        tipo: "ENTRADA",
+        valor,
+        origen: "Ingreso Recurrente",
+        referencia: c.codigo,
+      });
+    }
+  }
+
   entries.sort((a, b) => a.fecha.getTime() - b.fecha.getTime());
 
   const cajaNeta = totalEntradas - totalSalidas;
@@ -199,6 +245,50 @@ export async function getFlujoCajaProyectado(periodo: Periodo = "mes"): Promise<
   }
 
   return { entries, indicadores, alertas };
+}
+
+function generarFechasRecurrencia(desde: Date, hasta: Date, periodicidad: string, diaCorte: number, fechaInicio: Date): Date[] {
+  const fechas: Date[] = [];
+  const primerCobro = new Date(Math.max(desde.getTime(), fechaInicio.getTime()));
+  const current = new Date(primerCobro);
+
+  while (current <= hasta) {
+    let fechaPago: Date;
+
+    switch (periodicidad) {
+      case "DIARIO":
+        fechaPago = new Date(current);
+        current.setDate(current.getDate() + 1);
+        break;
+      case "SEMANAL":
+        fechaPago = new Date(current);
+        // Set to the day of week matching diaCorte (1=Mon...7=Sun)
+        const diaSemana = Math.min(Math.max(diaCorte, 1), 7);
+        const diff = diaSemana - current.getDay();
+        fechaPago.setDate(current.getDate() + diff);
+        current.setDate(current.getDate() + 7);
+        break;
+      case "QUINCENAL":
+        // Two payments per month: 1st and 15th (or diaCorte and diaCorte+15)
+        fechaPago = new Date(current.getFullYear(), current.getMonth(), Math.min(diaCorte, 28));
+        if (fechaPago < primerCobro) {
+          fechaPago = new Date(current.getFullYear(), current.getMonth(), Math.min(diaCorte + 15, 28));
+        }
+        current.setMonth(current.getMonth() + 1);
+        break;
+      case "MENSUAL":
+      default:
+        fechaPago = new Date(current.getFullYear(), current.getMonth(), Math.min(diaCorte, 28));
+        current.setMonth(current.getMonth() + 1);
+        break;
+    }
+
+    if (fechaPago >= desde && fechaPago <= hasta) {
+      fechas.push(fechaPago);
+    }
+  }
+
+  return fechas;
 }
 
 function formatNumber(n: number): string {

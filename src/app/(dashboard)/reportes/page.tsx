@@ -7,6 +7,7 @@ import { formatDate, formatCurrency } from "@/lib/utils";
 import {
   getReporteServicios, getReporteClientes, getReporteContratos,
   getReporteCuentasCobrar, getReporteCuentasPagar, getReporteRentabilidad,
+  getReporteContratosRecurrentes,
 } from "@/features/reportes/server/queries";
 
 const estadoBadge: Record<string, "default" | "success" | "warning" | "secondary" | "destructive"> = {
@@ -19,6 +20,14 @@ const estadoLabels: Record<string, string> = {
   PROGRAMADO: "Programado", EN_CURSO: "En curso", COMPLETADO: "Completado", CANCELADO: "Cancelado",
 };
 
+const tipoContratoLabels: Record<string, string> = {
+  POR_SERVICIOS: "Por servicios", RECURRENTE: "Recurrente", MIXTO: "Mixto",
+};
+
+const tipoContratoBadge: Record<string, "default" | "success" | "warning" | "secondary"> = {
+  POR_SERVICIOS: "secondary", RECURRENTE: "success", MIXTO: "warning",
+};
+
 export default async function ReportesPage() {
   const session = await auth();
   if (!session?.user?.empresaId) redirect("/login");
@@ -29,13 +38,14 @@ export default async function ReportesPage() {
   const finMes = new Date(ahora.getFullYear(), ahora.getMonth() + 1, 0, 23, 59, 59);
   const inicioAnio = new Date(ahora.getFullYear(), 0, 1);
 
-  const [servicios, clientes, contratos, cuentasCobrar, cuentasPagar, rentabilidad] = await Promise.all([
+  const [servicios, clientes, contratos, cuentasCobrar, cuentasPagar, rentabilidad, contratosRecurrentes] = await Promise.all([
     getReporteServicios(empresaId, inicioMes, finMes),
     getReporteClientes(empresaId),
     getReporteContratos(empresaId),
     getReporteCuentasCobrar(empresaId),
     getReporteCuentasPagar(empresaId),
     getReporteRentabilidad(empresaId, inicioAnio, finMes),
+    getReporteContratosRecurrentes(empresaId),
   ]);
 
   return (
@@ -51,6 +61,7 @@ export default async function ReportesPage() {
           { id: "cxc", label: "CxC" },
           { id: "cxp", label: "CxP" },
           { id: "rentabilidad", label: "Rentabilidad" },
+          { id: "rentabilidad-contractual", label: "Rent. Contractual" },
         ].map((item) => (
           <a key={item.id} href={`#${item.id}`}
             className="rounded-md bg-muted px-3 py-1.5 text-sm font-medium hover:bg-primary hover:text-primary-foreground transition-colors">
@@ -153,7 +164,8 @@ export default async function ReportesPage() {
                     <th className="py-2 pr-4">Código</th>
                     <th className="py-2 pr-4">Nombre</th>
                     <th className="py-2 pr-4">Cliente</th>
-                    <th className="py-2 pr-4">Tipo</th>
+                    <th className="py-2 pr-4">Tipo contrato</th>
+                    <th className="py-2 pr-4">Tipo servicio</th>
                     <th className="py-2 pr-4">Servicios</th>
                     <th className="py-2 pr-4">Ingresos</th>
                   </tr>
@@ -164,13 +176,14 @@ export default async function ReportesPage() {
                       <td className="py-2 pr-4">{c.codigo}</td>
                       <td className="py-2 pr-4 font-medium">{c.nombre}</td>
                       <td className="py-2 pr-4">{c.cliente}</td>
+                      <td className="py-2 pr-4"><Badge variant={tipoContratoBadge[c.tipoContrato]}>{tipoContratoLabels[c.tipoContrato]}</Badge></td>
                       <td className="py-2 pr-4">{c.tipoServicio}</td>
                       <td className="py-2 pr-4">{c.servicios}</td>
                       <td className="py-2 pr-4">{formatCurrency(c.ingresos)}</td>
                     </tr>
                   ))}
                   {contratos.length === 0 && (
-                    <tr><td colSpan={6} className="py-8 text-center text-muted-foreground">No hay contratos activos</td></tr>
+                    <tr><td colSpan={7} className="py-8 text-center text-muted-foreground">No hay contratos activos</td></tr>
                   )}
                 </tbody>
               </table>
@@ -262,7 +275,6 @@ export default async function ReportesPage() {
         <Card>
           <CardHeader><CardTitle>Reporte de Rentabilidad</CardTitle></CardHeader>
           <CardContent>
-            {/* Summary cards */}
             <div className="mb-4 grid gap-4 sm:grid-cols-3">
               <div className="rounded-lg border p-4">
                 <p className="text-xs text-muted-foreground">Ingresos totales</p>
@@ -279,7 +291,6 @@ export default async function ReportesPage() {
                 </p>
               </div>
             </div>
-            {/* Detail table */}
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
@@ -307,6 +318,46 @@ export default async function ReportesPage() {
                   ))}
                   {rentabilidad.servicios.length === 0 && (
                     <tr><td colSpan={7} className="py-8 text-center text-muted-foreground">No hay servicios completados en el período</td></tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </CardContent>
+        </Card>
+      </section>
+
+      {/* Reporte de Rentabilidad Contractual */}
+      <section id="rentabilidad-contractual" className="mb-8">
+        <Card>
+          <CardHeader><CardTitle>Rentabilidad Contractual</CardTitle></CardHeader>
+          <CardContent>
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b text-left text-muted-foreground">
+                    <th className="py-2 pr-4">Cliente</th>
+                    <th className="py-2 pr-4">Contrato</th>
+                    <th className="py-2 pr-4">Tipo</th>
+                    <th className="py-2 pr-4">Valor recurrente</th>
+                    <th className="py-2 pr-4">Rentabilidad base</th>
+                    <th className="py-2 pr-4">Estado</th>
+                    <th className="py-2 pr-4">Vigencia</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {contratosRecurrentes.map((c) => (
+                    <tr key={c.id} className="border-b">
+                      <td className="py-2 pr-4 font-medium">{c.cliente}</td>
+                      <td className="py-2 pr-4">{c.nombre}</td>
+                      <td className="py-2 pr-4"><Badge variant={tipoContratoBadge[c.tipoContrato]}>{tipoContratoLabels[c.tipoContrato]}</Badge></td>
+                      <td className="py-2 pr-4">{formatCurrency(c.valorRecurrente)}</td>
+                      <td className="py-2 pr-4">{formatCurrency(c.rentabilidadBase)}</td>
+                      <td className="py-2 pr-4"><Badge variant={c.active ? "success" : "secondary"}>{c.active ? "Vigente" : "Inactivo"}</Badge></td>
+                      <td className="py-2 pr-4">{formatDate(c.fechaInicio)} - {c.fechaFin ? formatDate(c.fechaFin) : "Indefinido"}</td>
+                    </tr>
+                  ))}
+                  {contratosRecurrentes.length === 0 && (
+                    <tr><td colSpan={7} className="py-8 text-center text-muted-foreground">No hay contratos recurrentes registrados</td></tr>
                   )}
                 </tbody>
               </table>

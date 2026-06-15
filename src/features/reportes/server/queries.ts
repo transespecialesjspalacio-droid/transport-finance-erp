@@ -55,7 +55,8 @@ export async function getReporteContratos(empresaId: string) {
   });
   return contratos.map(c => ({
     id: c.id, nombre: c.nombre, cliente: c.cliente.nombre, codigo: c.codigo,
-    tipoServicio: c.tipoServicio, servicios: c.servicios.length,
+    tipoServicio: c.tipoServicio, tipoContrato: c.tipoContrato,
+    servicios: c.servicios.length,
     ingresos: c.servicios.reduce((s, sv) => s + Number(sv.ingresoReal ?? sv.ingresoEsperado), 0),
   }));
 }
@@ -109,4 +110,18 @@ export async function getReporteRentabilidad(empresaId: string, desde: Date, has
     }),
     totales: { ingresos: totalIngresos, costos: totalCostos, utilidad: totalIngresos - totalCostos },
   };
+}
+
+export async function getReporteContratosRecurrentes(empresaId: string) {
+  const contratos = await prisma.contrato.findMany({
+    where: { empresaId, tipoContrato: { in: ["RECURRENTE", "MIXTO"] } },
+    include: { cliente: { select: { nombre: true } } },
+    orderBy: [{ active: "desc" }, { nombre: "asc" }],
+  });
+  return contratos.map(c => ({
+    id: c.id, codigo: c.codigo, nombre: c.nombre, cliente: c.cliente.nombre,
+    tipoContrato: c.tipoContrato, valorRecurrente: Number(c.valorRecurrente ?? 0),
+    rentabilidadBase: Number(c.rentabilidadBase ?? 0),
+    active: c.active, fechaInicio: c.fechaInicio, fechaFin: c.fechaFin,
+  }));
 }
