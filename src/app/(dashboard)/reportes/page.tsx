@@ -340,6 +340,7 @@ export default async function ReportesPage() {
                     <th className="py-2 pr-4">Tipo</th>
                     <th className="py-2 pr-4">Valor recurrente</th>
                     <th className="py-2 pr-4">Rentabilidad base</th>
+                    <th className="py-2 pr-4">Ingreso mensual total</th>
                     <th className="py-2 pr-4">Estado</th>
                     <th className="py-2 pr-4">Vigencia</th>
                   </tr>
@@ -352,12 +353,13 @@ export default async function ReportesPage() {
                       <td className="py-2 pr-4"><Badge variant={tipoContratoBadge[c.tipoContrato]}>{tipoContratoLabels[c.tipoContrato]}</Badge></td>
                       <td className="py-2 pr-4">{formatCurrency(c.valorRecurrente)}</td>
                       <td className="py-2 pr-4">{formatCurrency(c.rentabilidadBase)}</td>
+                      <td className="py-2 pr-4 font-semibold">{formatCurrency(c.ingresoMensualTotal)}</td>
                       <td className="py-2 pr-4"><Badge variant={c.active ? "success" : "secondary"}>{c.active ? "Vigente" : "Inactivo"}</Badge></td>
                       <td className="py-2 pr-4">{formatDate(c.fechaInicio)} - {c.fechaFin ? formatDate(c.fechaFin) : "Indefinido"}</td>
                     </tr>
                   ))}
                   {contratosRecurrentes.length === 0 && (
-                    <tr><td colSpan={7} className="py-8 text-center text-muted-foreground">No hay contratos recurrentes registrados</td></tr>
+                    <tr><td colSpan={8} className="py-8 text-center text-muted-foreground">No hay contratos recurrentes registrados</td></tr>
                   )}
                 </tbody>
               </table>

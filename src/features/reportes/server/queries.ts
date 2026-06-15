@@ -122,6 +122,7 @@ export async function getReporteContratosRecurrentes(empresaId: string) {
     id: c.id, codigo: c.codigo, nombre: c.nombre, cliente: c.cliente.nombre,
     tipoContrato: c.tipoContrato, valorRecurrente: Number(c.valorRecurrente ?? 0),
     rentabilidadBase: Number(c.rentabilidadBase ?? 0),
+    ingresoMensualTotal: Number(c.valorRecurrente ?? 0) + Number(c.rentabilidadBase ?? 0),
     active: c.active, fechaInicio: c.fechaInicio, fechaFin: c.fechaFin,
   }));
 }

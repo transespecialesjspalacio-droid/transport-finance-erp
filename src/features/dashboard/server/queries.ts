@@ -79,6 +79,7 @@ export async function getDashboardData() {
   ]);
 
   const ingresosServicios = Number(totalFacturadoMes._sum?.ingresoEsperado ?? 0);
+  const ingresosRecurrentesValor = Number(ingresosRecurrentesAgg._sum?.valorRecurrente ?? 0) + Number(rentabilidadBaseAgg._sum?.rentabilidadBase ?? 0);
 
   const serviciosHoyArray = serviciosHoy;
   const enCurso = serviciosHoyArray.filter((s) => s.estado === "EN_CURSO").length;
@@ -87,8 +88,8 @@ export async function getDashboardData() {
   const utilidadTotal = serviciosCompletados.reduce((sum, s) => {
     const ingreso = Number(s.ingresoReal ?? s.ingresoEsperado);
     const costos = s.costos.reduce((c, co) => c + Number(co.total), 0);
-    return sum + ingreso - costos;
-  }, 0);
+      return sum + ingreso - costos;
+    }, 0) + ingresosRecurrentesValor;
 
   const margenes = serviciosCompletados
     .map((s) => {
@@ -144,7 +145,7 @@ export async function getDashboardData() {
   return {
     kpis: {
       ingresosServicios,
-      ingresosRecurrentes: Number(ingresosRecurrentesAgg._sum?.valorRecurrente ?? 0),
+      ingresosRecurrentes: Number(ingresosRecurrentesAgg._sum?.valorRecurrente ?? 0) + Number(rentabilidadBaseAgg._sum?.rentabilidadBase ?? 0),
       rentabilidadBase: Number(rentabilidadBaseAgg._sum?.rentabilidadBase ?? 0),
       totalCobrado: Number(totalCobrado._sum?.monto ?? 0),
       totalPorCobrar: Number(totalPorCobrarAgg._sum?.saldoPendiente ?? 0),

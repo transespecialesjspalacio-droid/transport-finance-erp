@@ -131,7 +131,7 @@ export async function getFlujoCajaProyectado(periodo: Periodo = "mes"): Promise<
     });
   }
 
-  // Recurring contract projected income
+  // Recurring contract projected income (valorRecurrente + rentabilidadBase)
   const contratosRecurrentes = await prisma.contrato.findMany({
     where: {
       empresaId,
@@ -151,15 +151,35 @@ export async function getFlujoCajaProyectado(periodo: Periodo = "mes"): Promise<
     },
   });
 
+  const contratosMixtosRentabilidad = await prisma.contrato.findMany({
+    where: {
+      empresaId,
+      active: true,
+      tipoContrato: "MIXTO",
+      rentabilidadBase: { not: null, gt: 0 },
+    },
+    select: {
+      id: true,
+      codigo: true,
+      nombre: true,
+      cliente: { select: { nombre: true } },
+      rentabilidadBase: true,
+      periodicidad: true,
+      diaCorte: true,
+      fechaInicio: true,
+    },
+  });
+
+  // Use start of current month so recurring payments earlier in the month also show
   const hoy = new Date();
-  const inicioProyeccion = new Date(Math.max(start.getTime(), hoy.getTime()));
+  const inicioRecurrencia = new Date(hoy.getFullYear(), hoy.getMonth(), 1);
 
   for (const c of contratosRecurrentes) {
     const valor = Number(c.valorRecurrente);
     if (valor <= 0) continue;
 
     const diaCorte = c.diaCorte ?? 1;
-    const fechasPago = generarFechasRecurrencia(inicioProyeccion, end, c.periodicidad as string, diaCorte, c.fechaInicio);
+    const fechasPago = generarFechasRecurrencia(inicioRecurrencia, end, c.periodicidad as string, diaCorte, c.fechaInicio);
 
     let index = 0;
     for (const fecha of fechasPago) {
@@ -172,6 +192,29 @@ export async function getFlujoCajaProyectado(periodo: Periodo = "mes"): Promise<
         tipo: "ENTRADA",
         valor,
         origen: "Ingreso Recurrente",
+        referencia: c.codigo,
+      });
+    }
+  }
+
+  for (const c of contratosMixtosRentabilidad) {
+    const valor = Number(c.rentabilidadBase);
+    if (valor <= 0) continue;
+
+    const diaCorte = c.diaCorte ?? 1;
+    const fechasPago = generarFechasRecurrencia(inicioRecurrencia, end, c.periodicidad as string, diaCorte, c.fechaInicio);
+
+    let index = 0;
+    for (const fecha of fechasPago) {
+      index++;
+      totalEntradas += valor;
+      entries.push({
+        id: `rentabilidad-${c.id}-${index}`,
+        fecha,
+        concepto: `${c.cliente.nombre} - ${c.nombre} (Rent. Base)`,
+        tipo: "ENTRADA",
+        valor,
+        origen: "Rentabilidad Base",
         referencia: c.codigo,
       });
     }
@@ -247,6 +290,10 @@ export async function getFlujoCajaProyectado(periodo: Periodo = "mes"): Promise<
   return { entries, indicadores, alertas };
 }
 
+function ultimoDiaMes(year: number, month: number): number {
+  return new Date(year, month + 1, 0).getDate();
+}
+
 function generarFechasRecurrencia(desde: Date, hasta: Date, periodicidad: string, diaCorte: number, fechaInicio: Date): Date[] {
   const fechas: Date[] = [];
   const primerCobro = new Date(Math.max(desde.getTime(), fechaInicio.getTime()));
@@ -262,23 +309,23 @@ function generarFechasRecurrencia(desde: Date, hasta: Date, periodicidad: string
         break;
       case "SEMANAL":
         fechaPago = new Date(current);
-        // Set to the day of week matching diaCorte (1=Mon...7=Sun)
         const diaSemana = Math.min(Math.max(diaCorte, 1), 7);
         const diff = diaSemana - current.getDay();
         fechaPago.setDate(current.getDate() + diff);
         current.setDate(current.getDate() + 7);
         break;
       case "QUINCENAL":
-        // Two payments per month: 1st and 15th (or diaCorte and diaCorte+15)
-        fechaPago = new Date(current.getFullYear(), current.getMonth(), Math.min(diaCorte, 28));
+        fechaPago = new Date(current.getFullYear(), current.getMonth(), Math.min(diaCorte, ultimoDiaMes(current.getFullYear(), current.getMonth())));
         if (fechaPago < primerCobro) {
-          fechaPago = new Date(current.getFullYear(), current.getMonth(), Math.min(diaCorte + 15, 28));
+          const dia2 = Math.min(diaCorte + 15, ultimoDiaMes(current.getFullYear(), current.getMonth()));
+          fechaPago = new Date(current.getFullYear(), current.getMonth(), dia2);
         }
         current.setMonth(current.getMonth() + 1);
         break;
       case "MENSUAL":
       default:
-        fechaPago = new Date(current.getFullYear(), current.getMonth(), Math.min(diaCorte, 28));
+        const ultimo = ultimoDiaMes(current.getFullYear(), current.getMonth());
+        fechaPago = new Date(current.getFullYear(), current.getMonth(), Math.min(diaCorte, ultimo));
         current.setMonth(current.getMonth() + 1);
         break;
     }
