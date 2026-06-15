@@ -21,7 +21,7 @@ export async function getContratos(params: { q?: string; page?: string; tipo?: s
     ];
   }
 
-  if (tipo) where.tipoServicio = tipo;
+  if (tipo) where.tipoContrato = tipo;
 
   const [data, total] = await Promise.all([
     prisma.contrato.findMany({
@@ -43,7 +43,10 @@ export async function getContrato(id: string) {
 
   return prisma.contrato.findFirst({
     where: { id, empresaId: session.user.empresaId },
-    include: { cliente: { select: { nombre: true, id: true, codigo: true, rfc: true } } },
+    include: {
+      cliente: { select: { nombre: true, id: true, codigo: true, rfc: true } },
+      adjuntos: { orderBy: { createdAt: "desc" } },
+    },
   });
 }
 

@@ -100,6 +100,27 @@ enum EstadoConductor {
   DE_BAJA
 }
 
+enum TipoContrato {
+  POR_SERVICIOS
+  RECURRENTE
+  MIXTO
+}
+
+enum Periodicidad {
+  MENSUAL
+  QUINCENAL
+  SEMANAL
+  DIARIO
+}
+
+enum CategoriaAdjunto {
+  PROGRAMACION
+  FACTURA
+  ACTA
+  SOPORTE
+  OTRO
+}
+
 model Empresa {
   id        String   @id @default(uuid())
   nombre    String
@@ -121,6 +142,7 @@ model Empresa {
   conductores  Conductor[]
   cuentasCobrar CuentaCobrar[]
   cuentasPagar CuentaPagar[]
+  adjuntos     ContratoAdjunto[]
   flujoCaja    FlujoCaja[]
 
   @@map("empresas")
@@ -168,30 +190,53 @@ model Cliente {
 }
 
 model Contrato {
-  id            String              @id @default(uuid())
-  clienteId     String              @map("cliente_id")
-  empresaId     String              @map("empresa_id")
-  codigo        String
-  nombre        String
-  tipoServicio  TipoServicioContrato @map("tipo_servicio")
-  fechaInicio   DateTime            @map("fecha_inicio")
-  fechaFin      DateTime?           @map("fecha_fin")
-  montoMensual  Decimal?            @map("monto_mensual")
-  condicionPago CondicionPago       @default(DIAS_30) @map("condicion_pago")
-  active        Boolean             @default(true)
-  notas         String?
-  createdAt     DateTime            @default(now()) @map("created_at")
-  updatedAt     DateTime            @updatedAt @map("updated_at")
+  id              String              @id @default(uuid())
+  clienteId       String              @map("cliente_id")
+  empresaId       String              @map("empresa_id")
+  codigo          String
+  nombre          String
+  tipoServicio    TipoServicioContrato @map("tipo_servicio")
+  tipoContrato    TipoContrato         @default(POR_SERVICIOS) @map("tipo_contrato")
+  periodicidad    Periodicidad?        @map("periodicidad")
+  valorRecurrente Decimal?             @map("valor_recurrente")
+  rentabilidadBase Decimal?            @map("rentabilidad_base")
+  diaCorte        Int?                 @default(1) @map("dia_corte")
+  fechaInicio     DateTime             @map("fecha_inicio")
+  fechaFin        DateTime?            @map("fecha_fin")
+  montoMensual    Decimal?             @map("monto_mensual")
+  condicionPago   CondicionPago        @default(DIAS_30) @map("condicion_pago")
+  active          Boolean              @default(true)
+  notas           String?
+  createdAt       DateTime             @default(now()) @map("created_at")
+  updatedAt       DateTime             @updatedAt @map("updated_at")
 
-  cliente       Cliente        @relation(fields: [clienteId], references: [id], onDelete: Cascade)
-  empresa       Empresa        @relation(fields: [empresaId], references: [id], onDelete: Cascade)
+  cliente       Cliente           @relation(fields: [clienteId], references: [id], onDelete: Cascade)
+  empresa       Empresa           @relation(fields: [empresaId], references: [id], onDelete: Cascade)
   servicios     Servicio[]
   cuentasCobrar CuentaCobrar[]
+  adjuntos      ContratoAdjunto[]
 
   @@index([empresaId, active])
   @@index([empresaId, clienteId])
   @@index([empresaId, codigo])
   @@map("contratos")
+}
+
+model ContratoAdjunto {
+  id          String           @id @default(uuid())
+  contratoId  String           @map("contrato_id")
+  empresaId   String           @map("empresa_id")
+  nombre      String
+  tipo        String
+  url         String
+  categoria   CategoriaAdjunto @default(OTRO) @map("categoria")
+  createdAt   DateTime         @default(now()) @map("created_at")
+
+  contrato Contrato @relation(fields: [contratoId], references: [id], onDelete: Cascade)
+  empresa  Empresa  @relation(fields: [empresaId], references: [id], onDelete: Cascade)
+
+  @@index([contratoId])
+  @@map("contratos_adjuntos")
 }
 
 model Servicio {

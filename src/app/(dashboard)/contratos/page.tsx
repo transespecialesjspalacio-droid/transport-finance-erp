@@ -9,8 +9,15 @@ import { Badge } from "@/components/ui/badge";
 import { getContratos } from "@/features/contratos/server/queries";
 import { deleteContrato } from "@/features/contratos/server/actions";
 import { formatDate, formatCurrency } from "@/lib/utils";
+
 const tipoLabels: Record<string, string> = {
   ESCOLAR: "Escolar", CORPORATIVO: "Corporativo", MEDICO: "Médico", EVENTO: "Evento",
+};
+const tipoContratoLabels: Record<string, string> = {
+  POR_SERVICIOS: "Por servicios", RECURRENTE: "Recurrente", MIXTO: "Mixto",
+};
+const tipoContratoBadge: Record<string, "default" | "success" | "warning" | "secondary"> = {
+  POR_SERVICIOS: "secondary", RECURRENTE: "success", MIXTO: "warning",
 };
 
 export default async function ContratosPage(props: { searchParams: Promise<Record<string, string>> }) {
@@ -36,8 +43,13 @@ export default async function ContratosPage(props: { searchParams: Promise<Recor
           )},
           { header: "Nombre", cell: (c) => c.nombre },
           { header: "Cliente", cell: (c) => c.cliente.nombre },
-          { header: "Tipo", cell: (c) => <Badge variant="outline">{tipoLabels[c.tipoServicio]}</Badge> },
-          { header: "Monto mensual", cell: (c) => c.montoMensual ? formatCurrency(c.montoMensual) : "-" },
+          { header: "Tipo", cell: (c) => (
+            <div className="flex gap-1">
+              <Badge variant="outline">{tipoLabels[c.tipoServicio]}</Badge>
+              <Badge variant={tipoContratoBadge[c.tipoContrato]}>{tipoContratoLabels[c.tipoContrato]}</Badge>
+            </div>
+          )},
+          { header: "Valor recurrente", cell: (c) => c.tipoContrato !== "POR_SERVICIOS" && c.valorRecurrente ? formatCurrency(c.valorRecurrente) : "-" },
           { header: "Inicio", cell: (c) => formatDate(c.fechaInicio) },
           { header: "Estado", cell: (c) => (
             <Badge variant={c.active ? "success" : "secondary"}>{c.active ? "Vigente" : "Inactivo"}</Badge>

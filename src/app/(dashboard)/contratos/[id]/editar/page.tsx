@@ -18,6 +18,10 @@ export default async function EditarContratoPage(props: { params: Promise<{ id: 
           fechaInicio: contrato.fechaInicio.toISOString().split("T")[0],
           fechaFin: contrato.fechaFin?.toISOString().split("T")[0] ?? "",
           montoMensual: contrato.montoMensual?.toString() ?? "",
+          periodicidad: contrato.periodicidad ?? "",
+          valorRecurrente: contrato.valorRecurrente?.toString() ?? "",
+          rentabilidadBase: contrato.rentabilidadBase?.toString() ?? "",
+          diaCorte: contrato.diaCorte?.toString() ?? "1",
         }}
         clientes={clientes}
       />

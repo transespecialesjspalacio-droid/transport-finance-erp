@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { contratoSchema, type ContratoFormData } from "../schemas/contrato-schema";
 import { createContrato, updateContrato } from "../server/actions";
@@ -32,9 +32,14 @@ export function ContratoForm({ defaultValues, clientes }: Props) {
     resolver: zodResolver(contratoSchema),
     defaultValues: defaultValues ?? {
       clienteId: "", codigo: "", nombre: "", tipoServicio: "ESCOLAR",
+      tipoContrato: "POR_SERVICIOS", periodicidad: "", valorRecurrente: "",
+      rentabilidadBase: "", diaCorte: "1",
       fechaInicio: "", fechaFin: "", montoMensual: "", condicionPago: "DIAS_30", notas: "",
     },
   });
+
+  const tipoContrato = useWatch({ control: form.control, name: "tipoContrato" });
+  const esRecurrente = tipoContrato === "RECURRENTE" || tipoContrato === "MIXTO";
 
   async function onSubmit(data: ContratoFormData) {
     const form = new FormData();
@@ -86,8 +91,19 @@ export function ContratoForm({ defaultValues, clientes }: Props) {
           {form.formState.errors.nombre && <p className="text-xs text-destructive">{form.formState.errors.nombre.message}</p>}
         </div>
         <div className="space-y-2">
+          <Label htmlFor="tipoContrato">Tipo de contrato</Label>
+          <Select onValueChange={(v) => form.setValue("tipoContrato", v as "POR_SERVICIOS" | "RECURRENTE" | "MIXTO")} defaultValue={(defaultValues?.tipoContrato as string | undefined) ?? "POR_SERVICIOS"}>
+            <SelectTrigger><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="POR_SERVICIOS">Por servicios</SelectItem>
+              <SelectItem value="RECURRENTE">Recurrente</SelectItem>
+              <SelectItem value="MIXTO">Mixto</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+        <div className="space-y-2">
           <Label htmlFor="tipoServicio">Tipo de servicio</Label>
-              <Select onValueChange={(v) => form.setValue("tipoServicio", v as "ESCOLAR" | "CORPORATIVO" | "MEDICO" | "EVENTO")} defaultValue={(defaultValues?.tipoServicio as string | undefined) ?? "ESCOLAR"}>
+          <Select onValueChange={(v) => form.setValue("tipoServicio", v as "ESCOLAR" | "CORPORATIVO" | "MEDICO" | "EVENTO")} defaultValue={(defaultValues?.tipoServicio as string | undefined) ?? "ESCOLAR"}>
             <SelectTrigger><SelectValue /></SelectTrigger>
             <SelectContent>
               <SelectItem value="ESCOLAR">Escolar</SelectItem>
@@ -97,9 +113,41 @@ export function ContratoForm({ defaultValues, clientes }: Props) {
             </SelectContent>
           </Select>
         </div>
+
+        {esRecurrente && (
+          <>
+            <div className="space-y-2">
+              <Label htmlFor="periodicidad">Periodicidad</Label>
+              <Select onValueChange={(v) => form.setValue("periodicidad", v)} defaultValue={(defaultValues?.periodicidad as string | undefined) ?? ""}>
+                <SelectTrigger><SelectValue placeholder="Seleccionar..." /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="MENSUAL">Mensual</SelectItem>
+                  <SelectItem value="QUINCENAL">Quincenal</SelectItem>
+                  <SelectItem value="SEMANAL">Semanal</SelectItem>
+                  <SelectItem value="DIARIO">Diario</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="valorRecurrente">Valor recurrente</Label>
+              <Input id="valorRecurrente" type="number" step="0.01" {...form.register("valorRecurrente")} />
+            </div>
+            {tipoContrato === "MIXTO" && (
+              <div className="space-y-2">
+                <Label htmlFor="rentabilidadBase">Rentabilidad base (gestión)</Label>
+                <Input id="rentabilidadBase" type="number" step="0.01" {...form.register("rentabilidadBase")} />
+              </div>
+            )}
+            <div className="space-y-2">
+              <Label htmlFor="diaCorte">Día de corte</Label>
+              <Input id="diaCorte" type="number" min="1" max="28" {...form.register("diaCorte")} />
+            </div>
+          </>
+        )}
+
         <div className="space-y-2">
           <Label htmlFor="condicionPago">Condición de pago</Label>
-              <Select onValueChange={(v) => form.setValue("condicionPago", v as "DIAS_30" | "DIAS_60" | "ANTICIPADO")} defaultValue={(defaultValues?.condicionPago as string | undefined) ?? "DIAS_30"}>
+          <Select onValueChange={(v) => form.setValue("condicionPago", v as "DIAS_30" | "DIAS_60" | "ANTICIPADO")} defaultValue={(defaultValues?.condicionPago as string | undefined) ?? "DIAS_30"}>
             <SelectTrigger><SelectValue /></SelectTrigger>
             <SelectContent>
               <SelectItem value="DIAS_30">30 días</SelectItem>
@@ -118,7 +166,7 @@ export function ContratoForm({ defaultValues, clientes }: Props) {
           <Input id="fechaFin" type="date" {...form.register("fechaFin")} />
         </div>
         <div className="space-y-2">
-          <Label htmlFor="montoMensual">Monto mensual</Label>
+          <Label htmlFor="montoMensual">Monto mensual (por servicios)</Label>
           <Input id="montoMensual" type="number" step="0.01" {...form.register("montoMensual")} />
         </div>
         <div className="space-y-2 sm:col-span-2">
