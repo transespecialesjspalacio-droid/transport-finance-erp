@@ -173,13 +173,17 @@ export async function getFlujoCajaProyectado(periodo: Periodo = "mes"): Promise<
   // Use start of current month so recurring payments earlier in the month also show
   const hoy = new Date();
   const inicioRecurrencia = new Date(hoy.getFullYear(), hoy.getMonth(), 1);
+  // For "mes", bound to current month only (not today + 1 month)
+  const finRecurrencia = periodo === "mes"
+    ? new Date(hoy.getFullYear(), hoy.getMonth() + 1, 0, 23, 59, 59)
+    : end;
 
   for (const c of contratosRecurrentes) {
     const valor = Number(c.valorRecurrente);
     if (valor <= 0) continue;
 
     const diaCorte = c.diaCorte ?? 1;
-    const fechasPago = generarFechasRecurrencia(inicioRecurrencia, end, c.periodicidad as string, diaCorte, c.fechaInicio);
+    const fechasPago = generarFechasRecurrencia(inicioRecurrencia, finRecurrencia, c.periodicidad as string, diaCorte, c.fechaInicio);
 
     let index = 0;
     for (const fecha of fechasPago) {
@@ -202,7 +206,7 @@ export async function getFlujoCajaProyectado(periodo: Periodo = "mes"): Promise<
     if (valor <= 0) continue;
 
     const diaCorte = c.diaCorte ?? 1;
-    const fechasPago = generarFechasRecurrencia(inicioRecurrencia, end, c.periodicidad as string, diaCorte, c.fechaInicio);
+    const fechasPago = generarFechasRecurrencia(inicioRecurrencia, finRecurrencia, c.periodicidad as string, diaCorte, c.fechaInicio);
 
     let index = 0;
     for (const fecha of fechasPago) {
