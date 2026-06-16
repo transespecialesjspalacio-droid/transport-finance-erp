@@ -2,7 +2,7 @@ import { KpiCard } from "@/components/charts/kpi-card";
 import { formatCurrency } from "@/lib/utils";
 import {
   DollarSign, TrendingDown, Receipt, CreditCard,
-  TrendingUp, Wallet, Percent, Bus, Repeat, PiggyBank,
+  TrendingUp, Wallet, Percent, Bus, Repeat, PiggyBank, ChartNoAxesColumn,
 } from "lucide-react";
 
 interface Kpis {
@@ -12,7 +12,8 @@ interface Kpis {
   totalCobrado: number;
   totalPorCobrar: number;
   totalPorPagar: number;
-  utilidadTotal: number;
+  utilidadReal: number;
+  utilidadProyectada: number;
   cajaProyectada: number;
   margenPromedio: number;
   serviciosDelMes: number;
@@ -44,17 +45,23 @@ export function KpiGrid({ kpis, serviciosHoy }: Props) {
 
       <div>
         <h2 className="mb-3 text-sm font-semibold uppercase tracking-wider text-muted-foreground">Rentabilidad</h2>
-        <div className="grid gap-4 md:grid-cols-2">
+        <div className="grid gap-4 md:grid-cols-3">
           <KpiCard
             title="Rentabilidad Base Contratos"
             value={formatCurrency(kpis.rentabilidadBase)}
             icon={<PiggyBank className="h-5 w-5" />}
           />
           <KpiCard
-            title="Utilidad Total"
-            value={formatCurrency(kpis.utilidadTotal)}
+            title="Utilidad Real"
+            value={formatCurrency(kpis.utilidadReal)}
+            icon={<ChartNoAxesColumn className="h-5 w-5" />}
+            trend={kpis.utilidadReal >= 0 ? "up" : "down"}
+          />
+          <KpiCard
+            title="Utilidad Proyectada"
+            value={formatCurrency(kpis.utilidadProyectada)}
             icon={<TrendingUp className="h-5 w-5" />}
-            trend={kpis.utilidadTotal >= 0 ? "up" : "down"}
+            trend={kpis.utilidadProyectada >= 0 ? "up" : "down"}
           />
         </div>
       </div>

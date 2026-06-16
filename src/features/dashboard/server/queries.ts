@@ -79,17 +79,24 @@ export async function getDashboardData() {
   ]);
 
   const ingresosServicios = Number(totalFacturadoMes._sum?.ingresoEsperado ?? 0);
-  const ingresosRecurrentesValor = Number(ingresosRecurrentesAgg._sum?.valorRecurrente ?? 0) + Number(rentabilidadBaseAgg._sum?.rentabilidadBase ?? 0);
 
   const serviciosHoyArray = serviciosHoy;
   const enCurso = serviciosHoyArray.filter((s) => s.estado === "EN_CURSO").length;
   const programados = serviciosHoyArray.filter((s) => s.estado === "PROGRAMADO").length;
 
-  const utilidadTotal = serviciosCompletados.reduce((sum, s) => {
+  const utilidadProyectada = serviciosCompletados.reduce((sum, s) => {
     const ingreso = Number(s.ingresoReal ?? s.ingresoEsperado);
     const costos = s.costos.reduce((c, co) => c + Number(co.total), 0);
+    return sum + ingreso - costos;
+  }, 0);
+
+  const utilidadReal = serviciosCompletados
+    .filter((s) => s.estado === "COMPLETADO")
+    .reduce((sum, s) => {
+      const ingreso = Number(s.ingresoReal ?? s.ingresoEsperado);
+      const costos = s.costos.reduce((c, co) => c + Number(co.total), 0);
       return sum + ingreso - costos;
-    }, 0) + ingresosRecurrentesValor;
+    }, 0);
 
   const margenes = serviciosCompletados
     .map((s) => {
@@ -150,7 +157,8 @@ export async function getDashboardData() {
       totalCobrado: Number(totalCobrado._sum?.monto ?? 0),
       totalPorCobrar: Number(totalPorCobrarAgg._sum?.saldoPendiente ?? 0),
       totalPorPagar: Number(totalPorPagarAgg._sum?.saldoPendiente ?? 0),
-      utilidadTotal,
+      utilidadReal,
+      utilidadProyectada,
       cajaProyectada: flujoCaja.indicadores.cajaNetaProyectada,
       margenPromedio,
       serviciosDelMes,

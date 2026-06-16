@@ -42,6 +42,48 @@ export async function getVehiculo(id: string) {
   });
 }
 
+export interface RentabilidadVehiculo {
+  id: string;
+  placa: string;
+  marca: string;
+  modelo: string;
+  ingresos: number;
+  costos: number;
+  utilidad: number;
+  margen: number;
+  servicios: number;
+}
+
+export async function getRentabilidadVehiculos(empresaId: string): Promise<RentabilidadVehiculo[]> {
+  const vehiculos = await prisma.vehiculo.findMany({
+    where: { empresaId, active: true },
+    include: {
+      servicios: {
+        where: { estado: { not: "CANCELADO" } },
+        include: { costos: { select: { total: true } } },
+      },
+    },
+    orderBy: { placa: "asc" },
+  });
+
+  return vehiculos.map((v) => {
+    const ingresos = v.servicios.reduce((s, sv) => s + Number(sv.ingresoReal ?? sv.ingresoEsperado), 0);
+    const costos = v.servicios.reduce((s, sv) => s + sv.costos.reduce((c, co) => c + Number(co.total), 0), 0);
+    const utilidad = ingresos - costos;
+    return {
+      id: v.id,
+      placa: v.placa,
+      marca: v.marca ?? "",
+      modelo: v.modelo ?? "",
+      ingresos,
+      costos,
+      utilidad,
+      margen: ingresos > 0 ? (utilidad / ingresos) * 100 : 0,
+      servicios: v.servicios.length,
+    };
+  });
+}
+
 export async function getVehiculosOptions() {
   const session = await auth();
   if (!session?.user?.empresaId) return [];

@@ -7,7 +7,7 @@ import { formatDate, formatCurrency } from "@/lib/utils";
 import {
   getReporteServicios, getReporteClientes, getReporteContratos,
   getReporteCuentasCobrar, getReporteCuentasPagar, getReporteRentabilidad,
-  getReporteContratosRecurrentes,
+  getReporteContratosRecurrentes, getReporteComparativoRealVsProyectado,
 } from "@/features/reportes/server/queries";
 
 const estadoBadge: Record<string, "default" | "success" | "warning" | "secondary" | "destructive"> = {
@@ -38,7 +38,7 @@ export default async function ReportesPage() {
   const finMes = new Date(ahora.getFullYear(), ahora.getMonth() + 1, 0, 23, 59, 59);
   const inicioAnio = new Date(ahora.getFullYear(), 0, 1);
 
-  const [servicios, clientes, contratos, cuentasCobrar, cuentasPagar, rentabilidad, contratosRecurrentes] = await Promise.all([
+  const [servicios, clientes, contratos, cuentasCobrar, cuentasPagar, rentabilidad, contratosRecurrentes, comparativo] = await Promise.all([
     getReporteServicios(empresaId, inicioMes, finMes),
     getReporteClientes(empresaId),
     getReporteContratos(empresaId),
@@ -46,6 +46,7 @@ export default async function ReportesPage() {
     getReporteCuentasPagar(empresaId),
     getReporteRentabilidad(empresaId, inicioAnio, finMes),
     getReporteContratosRecurrentes(empresaId),
+    getReporteComparativoRealVsProyectado(empresaId),
   ]);
 
   return (
@@ -62,6 +63,7 @@ export default async function ReportesPage() {
           { id: "cxp", label: "CxP" },
           { id: "rentabilidad", label: "Rentabilidad" },
           { id: "rentabilidad-contractual", label: "Rent. Contractual" },
+          { id: "real-vs-proyectado", label: "Real vs Proyectado" },
         ].map((item) => (
           <a key={item.id} href={`#${item.id}`}
             className="rounded-md bg-muted px-3 py-1.5 text-sm font-medium hover:bg-primary hover:text-primary-foreground transition-colors">
@@ -318,6 +320,44 @@ export default async function ReportesPage() {
                   ))}
                   {rentabilidad.servicios.length === 0 && (
                     <tr><td colSpan={7} className="py-8 text-center text-muted-foreground">No hay servicios completados en el período</td></tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </CardContent>
+        </Card>
+      </section>
+
+      {/* Reporte de Comparativo Real vs Proyectado */}
+      <section id="real-vs-proyectado" className="mb-8">
+        <Card>
+          <CardHeader><CardTitle>Comparativo Real vs Proyectado</CardTitle></CardHeader>
+          <CardContent>
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b text-left text-muted-foreground">
+                    <th className="py-2 pr-4">Contrato</th>
+                    <th className="py-2 pr-4">Cliente</th>
+                    <th className="py-2 pr-4">Utilidad Real</th>
+                    <th className="py-2 pr-4">Utilidad Proyectada</th>
+                    <th className="py-2 pr-4">Diferencia</th>
+                    <th className="py-2 pr-4">% Cumplimiento</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {comparativo.map((c) => (
+                    <tr key={c.contratoId} className="border-b">
+                      <td className="py-2 pr-4 font-medium">{c.contrato}</td>
+                      <td className="py-2 pr-4">{c.cliente}</td>
+                      <td className="py-2 pr-4 text-emerald-600">{formatCurrency(c.utilidadReal)}</td>
+                      <td className="py-2 pr-4">{formatCurrency(c.utilidadProyectada)}</td>
+                      <td className={`py-2 pr-4 ${c.diferencia >= 0 ? "text-emerald-600" : "text-red-600"}`}>{formatCurrency(c.diferencia)}</td>
+                      <td className="py-2 pr-4">{c.cumplimiento.toFixed(1)}%</td>
+                    </tr>
+                  ))}
+                  {comparativo.length === 0 && (
+                    <tr><td colSpan={6} className="py-8 text-center text-muted-foreground">No hay contratos activos para comparar</td></tr>
                   )}
                 </tbody>
               </table>

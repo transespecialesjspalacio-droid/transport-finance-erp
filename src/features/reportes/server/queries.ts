@@ -112,6 +112,56 @@ export async function getReporteRentabilidad(empresaId: string, desde: Date, has
   };
 }
 
+export interface ComparativoRealVsProyectado {
+  contratoId: string;
+  contrato: string;
+  cliente: string;
+  utilidadReal: number;
+  utilidadProyectada: number;
+  diferencia: number;
+  cumplimiento: number;
+}
+
+export async function getReporteComparativoRealVsProyectado(empresaId: string): Promise<ComparativoRealVsProyectado[]> {
+  const contratos = await prisma.contrato.findMany({
+    where: { empresaId, active: true },
+    include: {
+      cliente: { select: { nombre: true } },
+      servicios: {
+        where: { estado: { not: "CANCELADO" } },
+        include: { costos: { select: { total: true } } },
+      },
+    },
+    orderBy: { nombre: "asc" },
+  });
+
+  return contratos.map((c) => {
+    const proyectada = c.servicios.reduce((sum, sv) => {
+      const ingreso = Number(sv.ingresoReal ?? sv.ingresoEsperado);
+      const costos = sv.costos.reduce((c2, co) => c2 + Number(co.total), 0);
+      return sum + ingreso - costos;
+    }, 0);
+
+    const real = c.servicios
+      .filter((sv) => sv.estado === "COMPLETADO")
+      .reduce((sum, sv) => {
+        const ingreso = Number(sv.ingresoReal ?? sv.ingresoEsperado);
+        const costos = sv.costos.reduce((c2, co) => c2 + Number(co.total), 0);
+        return sum + ingreso - costos;
+      }, 0);
+
+    return {
+      contratoId: c.id,
+      contrato: c.nombre,
+      cliente: c.cliente.nombre,
+      utilidadReal: real,
+      utilidadProyectada: proyectada,
+      diferencia: proyectada - real,
+      cumplimiento: proyectada > 0 ? (real / proyectada) * 100 : 0,
+    };
+  });
+}
+
 export async function getReporteContratosRecurrentes(empresaId: string) {
   const contratos = await prisma.contrato.findMany({
     where: { empresaId, tipoContrato: { in: ["RECURRENTE", "MIXTO"] } },
