@@ -29,6 +29,9 @@ ALTER TABLE "vehiculos" RENAME COLUMN "tipo_vehiculo_nuevo" TO "tipo_vehiculo";
 -- 6. Drop old enum type
 DROP TYPE IF EXISTS "TipoVehiculo";
 
+-- 7. Rename new type back to the expected name (so Prisma can write to it)
+ALTER TYPE "TipoVehiculoNuevo" RENAME TO "TipoVehiculo";
+
 -- 7. Remove unused km columns from servicios
 ALTER TABLE "servicios" DROP COLUMN IF EXISTS "distancia_km";
 ALTER TABLE "servicios" DROP COLUMN IF EXISTS "km_recorridos";
