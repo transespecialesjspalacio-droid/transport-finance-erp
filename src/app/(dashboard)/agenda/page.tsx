@@ -6,7 +6,7 @@ import { PageHeader } from "@/components/shared/page-header";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { getAgendaServicios } from "@/features/agenda/server/queries";
-import { formatDate } from "@/lib/utils";
+
 
 const estadoBadge: Record<string, "default" | "success" | "warning" | "secondary"> = {
   PROGRAMADO: "warning", EN_CURSO: "default", COMPLETADO: "success", CANCELADO: "secondary",
@@ -15,9 +15,47 @@ const estadoLabels: Record<string, string> = {
   PROGRAMADO: "Programado", EN_CURSO: "En curso", COMPLETADO: "Completado", CANCELADO: "Cancelado",
 };
 
+function fmtDateTime(d: Date, showDate = true): string {
+  const pad = (n: number) => String(n).padStart(2, "0");
+  const fecha = `${pad(d.getDate())}/${pad(d.getMonth() + 1)}`;
+  const hora = `${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  return showDate ? `${fecha} ${hora}` : hora;
+}
+
+function fmtFecha(d: Date): string {
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${pad(d.getDate())}/${pad(d.getMonth() + 1)}/${d.getFullYear()}`;
+}
+
 function getHoy() {
   const d = new Date();
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+}
+
+function BadgeTipo(props: { servicio: { fechaRegreso: Date | null; horaRegreso: Date | null } }) {
+  const { servicio } = props;
+  if (servicio.fechaRegreso && servicio.horaRegreso) {
+    return <Badge variant="secondary" className="text-xs">Ida y Regreso</Badge>;
+  }
+  if (servicio.fechaRegreso) {
+    return <Badge variant="secondary" className="text-xs">Ida y Regreso</Badge>;
+  }
+  return <Badge variant="secondary" className="text-xs">Solo Ida</Badge>;
+}
+
+function SalidaRegreso({ servicio }: { servicio: { fecha: Date; horaSalida: Date | null; fechaRegreso: Date | null; horaRegreso: Date | null } }) {
+  const salida = servicio.horaSalida
+    ? `${fmtDateTime(servicio.horaSalida)}`
+    : `${fmtFecha(servicio.fecha)}`;
+  if (servicio.fechaRegreso && servicio.horaRegreso) {
+    const regreso = `${fmtDateTime(servicio.horaRegreso)}`;
+    return (
+      <span className="text-muted-foreground">
+        <strong>Salida:</strong> {salida} &nbsp;|&nbsp; <strong>Regreso:</strong> {regreso}
+      </span>
+    );
+  }
+  return <span className="text-muted-foreground"><strong>Salida:</strong> {salida}</span>;
 }
 
 async function AgendaContent({ searchParams }: { searchParams: Record<string, string> }) {
@@ -34,7 +72,7 @@ async function AgendaContent({ searchParams }: { searchParams: Record<string, st
             <Link href={`/agenda?fecha=${fecha}&rango=semana`}><Badge variant={rango === "semana" ? "default" : "outline"}>Semana</Badge></Link>
             <Link href={`/agenda?fecha=${fecha}&rango=mes`}><Badge variant={rango === "mes" ? "default" : "outline"}>Mes</Badge></Link>
             <span className="text-sm text-muted-foreground ml-auto">
-              {formatDate(data.desde)}{data.desde.toDateString() !== data.hasta.toDateString() ? ` - ${formatDate(data.hasta)}` : ""}
+              {fmtFecha(data.desde)}{data.desde.toDateString() !== data.hasta.toDateString() ? ` - ${fmtFecha(data.hasta)}` : ""}
             </span>
           </div>
         </CardContent>
@@ -59,19 +97,12 @@ async function AgendaContent({ searchParams }: { searchParams: Record<string, st
                     <span className="text-xs text-muted-foreground">{s.codigo}</span>
                     <span className="text-sm font-medium">{s.contrato?.cliente?.nombre || s.contrato?.nombre}</span>
                     <Badge variant="outline">{s.contrato?.codigo}</Badge>
-                    {s.fechaRegreso && s.horaRegreso ? (
-                      <Badge variant="secondary" className="text-xs">Ida y Regreso</Badge>
-                    ) : (
-                      <Badge variant="secondary" className="text-xs">Solo Ida</Badge>
-                    )}
+                    <BadgeTipo servicio={s} />
                   </div>
                   <div className="flex flex-wrap gap-x-6 gap-y-1 mt-2 text-sm">
                     <span>{s.origen || "-"} → {s.destino || "-"}</span>
-                    <span className="text-muted-foreground">
-                      {s.fecha && formatDate(s.fecha)}
-                      {s.horaSalida && ` · ${s.horaSalida.toLocaleTimeString("es-MX", { hour: "2-digit", minute: "2-digit" })}`}
-                    </span>
-                    {s.vehiculo && <span>🚛 {s.vehiculo.placa}</span>}
+                    <SalidaRegreso servicio={s} />
+                    {s.vehiculo && <span className="font-medium">🚛 {s.vehiculo.placa}</span>}
                     {s.conductor && <span>👤 {s.conductor.nombre}</span>}
                     {s.pasajeros != null && <span>👥 {s.pasajeros}</span>}
                   </div>
@@ -87,37 +118,44 @@ async function AgendaContent({ searchParams }: { searchParams: Record<string, st
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b text-left">
-                <th className="py-2 px-3 font-medium">Fecha</th>
-                <th className="py-2 px-3 font-medium">Hora</th>
                 <th className="py-2 px-3 font-medium">Cliente</th>
-                <th className="py-2 px-3 font-medium">Contrato</th>
+                <th className="py-2 px-3 font-medium">Salida</th>
+                <th className="py-2 px-3 font-medium">Regreso</th>
                 <th className="py-2 px-3 font-medium">Origen</th>
                 <th className="py-2 px-3 font-medium">Destino</th>
                 <th className="py-2 px-3 font-medium">Vehículo</th>
                 <th className="py-2 px-3 font-medium">Conductor</th>
                 <th className="py-2 px-3 font-medium">Pasajeros</th>
                 <th className="py-2 px-3 font-medium">Estado</th>
-                <th className="py-2 px-3 font-medium">Viaje</th>
               </tr>
             </thead>
             <tbody>
               {data.servicios.map((s) => (
                 <tr key={s.id} className="border-b hover:bg-accent/50">
-                  <td className="py-2 px-3"><Link href={`/servicios/${s.id}`} className="hover:underline">{formatDate(s.fecha)}</Link></td>
-                  <td className="py-2 px-3">{s.horaSalida ? s.horaSalida.toLocaleTimeString("es-MX", { hour: "2-digit", minute: "2-digit" }) : "-"}</td>
-                  <td className="py-2 px-3">{s.contrato?.cliente?.nombre || "-"}</td>
-                  <td className="py-2 px-3">{s.contrato?.codigo}</td>
+                  <td className="py-2 px-3">
+                    <Link href={`/servicios/${s.id}`} className="hover:underline font-medium">
+                      {s.contrato?.cliente?.nombre || s.contrato?.nombre || "-"}
+                    </Link>
+                    <div className="text-xs text-muted-foreground">{s.contrato?.codigo} · {fmtFecha(s.fecha)}</div>
+                  </td>
+                  <td className="py-2 px-3 whitespace-nowrap">
+                    {s.horaSalida ? fmtDateTime(s.horaSalida) : fmtFecha(s.fecha)}
+                  </td>
+                  <td className="py-2 px-3 whitespace-nowrap">
+                    {s.fechaRegreso && s.horaRegreso ? (
+                      <span>{fmtDateTime(s.horaRegreso)}</span>
+                    ) : s.fechaRegreso ? (
+                      <span>{fmtFecha(s.fechaRegreso)}</span>
+                    ) : (
+                      <span className="text-muted-foreground">-</span>
+                    )}
+                  </td>
                   <td className="py-2 px-3">{s.origen || "-"}</td>
                   <td className="py-2 px-3">{s.destino || "-"}</td>
-                  <td className="py-2 px-3">{s.vehiculo?.placa || "-"}</td>
+                  <td className="py-2 px-3 font-medium">{s.vehiculo?.placa || "-"}</td>
                   <td className="py-2 px-3">{s.conductor?.nombre || "-"}</td>
                   <td className="py-2 px-3">{s.pasajeros ?? "-"}</td>
                   <td className="py-2 px-3"><Badge variant={estadoBadge[s.estado]}>{estadoLabels[s.estado]}</Badge></td>
-                  <td className="py-2 px-3">
-                    <Badge variant="secondary" className="text-xs">
-                      {s.fechaRegreso && s.horaRegreso ? "Ida y Regreso" : "Solo Ida"}
-                    </Badge>
-                  </td>
                 </tr>
               ))}
             </tbody>

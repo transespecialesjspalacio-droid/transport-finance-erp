@@ -1,18 +1,19 @@
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
+import { inicioOcupacion, finOcupacion } from "../utils/ocupacion";
 
 export interface ConflictoVehiculo {
   tipo: "vehiculo";
   vehiculoId: string;
   placa: string;
-  servicios: { id: string; codigo: string; fecha: Date; horaSalida?: Date | null; estado: string }[];
+  servicios: { id: string; codigo: string; inicio: Date; fin: Date; estado: string }[];
 }
 
 export interface ConflictoConductor {
   tipo: "conductor";
   conductorId: string;
   nombre: string;
-  servicios: { id: string; codigo: string; fecha: Date; horaSalida?: Date | null; estado: string }[];
+  servicios: { id: string; codigo: string; inicio: Date; fin: Date; estado: string }[];
 }
 
 export interface OcupacionFlota {
@@ -37,7 +38,10 @@ export async function getConflictosAgenda(fecha: string) {
   const servicios = await prisma.servicio.findMany({
     where: {
       empresaId: session.user.empresaId,
-      fecha: { gte: inicioSemana, lte: finSemana },
+      OR: [
+        { fecha: { gte: inicioSemana, lte: finSemana } },
+        { fechaRegreso: { gte: inicioSemana, lte: finSemana } },
+      ],
       estado: { not: "CANCELADO" },
       vehiculoId: { not: null },
     },
@@ -47,6 +51,10 @@ export async function getConflictosAgenda(fecha: string) {
     },
     orderBy: { fecha: "asc" },
   });
+
+  function solapan(a: Date, b: Date, c: Date, d: Date): boolean {
+    return a < d && c < b;
+  }
 
   const vehiculoMap = new Map<string, typeof servicios>();
   const conductorMap = new Map<string, typeof servicios>();
@@ -63,40 +71,82 @@ export async function getConflictosAgenda(fecha: string) {
 
   const conflictosVehiculo: ConflictoVehiculo[] = [];
   for (const [vid, ss] of vehiculoMap) {
-    const fechas = ss.map((s) => s.fecha.toDateString());
-    const unicas = new Set(fechas);
-    if (unicas.size < fechas.length) {
+    const conConflictos: ConflictoVehiculo["servicios"] = [];
+    for (let i = 0; i < ss.length; i++) {
+      for (let j = i + 1; j < ss.length; j++) {
+        const a = inicioOcupacion(ss[i]);
+        const b = finOcupacion(ss[i]);
+        const c = inicioOcupacion(ss[j]);
+        const d = finOcupacion(ss[j]);
+        if (solapan(a, b, c, d)) {
+          if (!conConflictos.find((x) => x.id === ss[i].id)) {
+            conConflictos.push({
+              id: ss[i].id,
+              codigo: ss[i].codigo ?? "",
+              inicio: a,
+              fin: b,
+              estado: ss[i].estado,
+            });
+          }
+          if (!conConflictos.find((x) => x.id === ss[j].id)) {
+            conConflictos.push({
+              id: ss[j].id,
+              codigo: ss[j].codigo ?? "",
+              inicio: c,
+              fin: d,
+              estado: ss[j].estado,
+            });
+          }
+        }
+      }
+    }
+    if (conConflictos.length > 0) {
       conflictosVehiculo.push({
         tipo: "vehiculo",
         vehiculoId: vid,
         placa: ss[0].vehiculo?.placa ?? "",
-        servicios: ss.map((s) => ({
-          id: s.id,
-          codigo: s.codigo ?? "",
-          fecha: s.fecha,
-          horaSalida: s.horaSalida,
-          estado: s.estado,
-        })),
+        servicios: conConflictos,
       });
     }
   }
 
   const conflictosConductor: ConflictoConductor[] = [];
   for (const [cid, ss] of conductorMap) {
-    const fechas = ss.map((s) => s.fecha.toDateString());
-    const unicas = new Set(fechas);
-    if (unicas.size < fechas.length) {
+    const conConflictos: ConflictoConductor["servicios"] = [];
+    for (let i = 0; i < ss.length; i++) {
+      for (let j = i + 1; j < ss.length; j++) {
+        const a = inicioOcupacion(ss[i]);
+        const b = finOcupacion(ss[i]);
+        const c = inicioOcupacion(ss[j]);
+        const d = finOcupacion(ss[j]);
+        if (solapan(a, b, c, d)) {
+          if (!conConflictos.find((x) => x.id === ss[i].id)) {
+            conConflictos.push({
+              id: ss[i].id,
+              codigo: ss[i].codigo ?? "",
+              inicio: a,
+              fin: b,
+              estado: ss[i].estado,
+            });
+          }
+          if (!conConflictos.find((x) => x.id === ss[j].id)) {
+            conConflictos.push({
+              id: ss[j].id,
+              codigo: ss[j].codigo ?? "",
+              inicio: c,
+              fin: d,
+              estado: ss[j].estado,
+            });
+          }
+        }
+      }
+    }
+    if (conConflictos.length > 0) {
       conflictosConductor.push({
         tipo: "conductor",
         conductorId: cid,
         nombre: ss[0].conductor?.nombre ?? "",
-        servicios: ss.map((s) => ({
-          id: s.id,
-          codigo: s.codigo ?? "",
-          fecha: s.fecha,
-          horaSalida: s.horaSalida,
-          estado: s.estado,
-        })),
+        servicios: conConflictos,
       });
     }
   }

@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
+import { getOcupacionRango } from "../utils/ocupacion";
 
 type Rango = "dia" | "semana" | "mes";
 
@@ -25,7 +26,7 @@ export async function getAgendaServicios(fecha: string, rango: Rango) {
   desde.setHours(0, 0, 0, 0);
   hasta.setHours(23, 59, 59, 999);
 
-  const servicios = await prisma.servicio.findMany({
+  const serviciosRaw = await prisma.servicio.findMany({
     where: {
       empresaId: session.user.empresaId,
       fecha: { gte: desde, lte: hasta },
@@ -37,6 +38,11 @@ export async function getAgendaServicios(fecha: string, rango: Rango) {
     },
     orderBy: [{ fecha: "asc" }, { horaSalida: "asc" }],
   });
+
+  const servicios = serviciosRaw.map((s) => ({
+    ...s,
+    ocupacion: getOcupacionRango(s),
+  }));
 
   const serviciosDelDia = servicios.filter(
     (s) => s.fecha.toDateString() === base.toDateString()
