@@ -9,8 +9,7 @@ import { deleteVehiculo } from "@/features/vehiculos/server/actions";
 import { formatDate, formatCurrency } from "@/lib/utils";
 
 const tipoLabels: Record<string, string> = {
-  CAMION: "Camión", CAMIONETA: "Camioneta", TRAILER: "Tráiler",
-  VOLQUETE: "Volquete", GRUA: "Grúa", OTRO: "Otro",
+  BUS: "Bus", BUSETON: "Busetón", BUSETA: "Buseta",
 };
 const propietarioLabels: Record<string, string> = {
   PROPIO: "Propio", TERCERO: "Tercero",

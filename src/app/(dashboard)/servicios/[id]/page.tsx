@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { getServicio } from "@/features/servicios/server/queries";
 import { deleteServicio } from "@/features/servicios/server/actions";
 import { formatDate, formatCurrency } from "@/lib/utils";
-import { costoPorKm, utilidadPorKm, margenUtilidad, type ServicioWithCostos } from "@/features/servicios/utils/rentabilidad";
+import { totalCostos, margenUtilidad, type ServicioWithCostos } from "@/features/servicios/utils/rentabilidad";
 
 const estadoLabels: Record<string, string> = {
   PROGRAMADO: "Programado", EN_CURSO: "En curso", COMPLETADO: "Completado", CANCELADO: "Cancelado",
@@ -19,8 +19,7 @@ export default async function ServicioDetailPage(props: { params: Promise<{ id: 
   if (!servicio) notFound();
 
   const svc = servicio as unknown as ServicioWithCostos;
-  const costoKm = costoPorKm(svc);
-  const utilKm = utilidadPorKm(svc);
+  const totalCost = totalCostos(svc);
   const margen = margenUtilidad(svc);
 
   return (
@@ -36,7 +35,7 @@ export default async function ServicioDetailPage(props: { params: Promise<{ id: 
         </div>
       </PageHeader>
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-4 md:grid-cols-2">
         <Card>
           <CardHeader><CardTitle className="text-sm">Información del servicio</CardTitle></CardHeader>
           <CardContent className="space-y-2 text-sm">
@@ -57,8 +56,6 @@ export default async function ServicioDetailPage(props: { params: Promise<{ id: 
           <CardContent className="space-y-2 text-sm">
             <div className="flex justify-between"><span className="text-muted-foreground">Vehículo</span><span>{servicio.vehiculo?.placa || "Sin asignar"}</span></div>
             <div className="flex justify-between"><span className="text-muted-foreground">Conductor</span><span>{servicio.conductor?.nombre || "Sin asignar"}</span></div>
-            <div className="flex justify-between"><span className="text-muted-foreground">Distancia</span><span>{servicio.distanciaKm ? `${Number(servicio.distanciaKm).toFixed(1)} km` : "-"}</span></div>
-            <div className="flex justify-between"><span className="text-muted-foreground">Km recorridos</span><span className="font-medium">{servicio.kmRecorridos ? `${Number(servicio.kmRecorridos).toFixed(1)} km` : "Pendiente"}</span></div>
           </CardContent>
         </Card>
         <Card>
@@ -67,30 +64,15 @@ export default async function ServicioDetailPage(props: { params: Promise<{ id: 
             <div className="flex justify-between"><span className="text-muted-foreground">Tarifa</span><span className="font-semibold">{formatCurrency(servicio.tarifaAplicada)}</span></div>
             <div className="flex justify-between"><span className="text-muted-foreground">Ingreso esperado</span><span>{formatCurrency(servicio.ingresoEsperado)}</span></div>
             <div className="flex justify-between"><span className="text-muted-foreground">Ingreso real</span><span className="font-semibold">{servicio.ingresoReal ? formatCurrency(servicio.ingresoReal) : "Pendiente"}</span></div>
-            <div className="flex justify-between"><span className="text-muted-foreground">Total costos</span><span>{formatCurrency(servicio.costos.reduce((s, c) => s + Number(c.total), 0))}</span></div>
+            <div className="flex justify-between"><span className="text-muted-foreground">Total costos</span><span>{formatCurrency(totalCost)}</span></div>
           </CardContent>
         </Card>
-        <Card className="md:col-span-2 lg:col-span-3">
-          <CardHeader><CardTitle className="text-sm">Rentabilidad por kilómetro</CardTitle></CardHeader>
-          <CardContent>
-            <div className="grid gap-4 sm:grid-cols-3">
-              <div className="rounded-lg border p-4">
-                <p className="text-xs text-muted-foreground">Costo por km</p>
-                <p className="text-xl font-bold">{costoKm !== null ? formatCurrency(costoKm) : "N/D"}</p>
-              </div>
-              <div className="rounded-lg border p-4">
-                <p className="text-xs text-muted-foreground">Utilidad por km</p>
-                <p className={`text-xl font-bold ${utilKm !== null && utilKm >= 0 ? "text-emerald-600" : "text-red-600"}`}>
-                  {utilKm !== null ? formatCurrency(utilKm) : "N/D"}
-                </p>
-              </div>
-              <div className="rounded-lg border p-4">
-                <p className="text-xs text-muted-foreground">Margen de utilidad</p>
-                <p className={`text-xl font-bold ${margen !== null && margen >= 0 ? "text-emerald-600" : "text-red-600"}`}>
-                  {margen !== null ? `${margen.toFixed(1)}%` : "N/D"}
-                </p>
-              </div>
-            </div>
+        <Card>
+          <CardHeader><CardTitle className="text-sm">Margen de utilidad</CardTitle></CardHeader>
+          <CardContent className="flex items-center justify-center h-full">
+            <p className={`text-2xl font-bold ${margen !== null && margen >= 0 ? "text-emerald-600" : "text-red-600"}`}>
+              {margen !== null ? `${margen.toFixed(1)}%` : "N/D"}
+            </p>
           </CardContent>
         </Card>
       </div>

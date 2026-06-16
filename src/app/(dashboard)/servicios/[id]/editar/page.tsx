@@ -23,8 +23,6 @@ export default async function EditarServicioPage(props: { params: Promise<{ id: 
     horaInicio: fmtTime(servicio.horaInicio),
     horaFin: fmtTime(servicio.horaFin),
     pasajeros: servicio.pasajeros?.toString() ?? "",
-    distanciaKm: servicio.distanciaKm?.toString() ?? "",
-    kmRecorridos: servicio.kmRecorridos?.toString() ?? "",
     tarifaAplicada: servicio.tarifaAplicada.toString(),
     ingresoEsperado: servicio.ingresoEsperado.toString(),
     ingresoReal: servicio.ingresoReal?.toString() ?? "",

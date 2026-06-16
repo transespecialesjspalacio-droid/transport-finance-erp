@@ -30,7 +30,7 @@ export function ServicioForm({ defaultValues, contratos, vehiculos, conductores 
     defaultValues: defaultValues ?? {
       contratoId: "", vehiculoId: "", conductorId: "", fecha: "",
       horaInicio: "", horaFin: "", origen: "", destino: "",
-      distanciaKm: "", kmRecorridos: "", tipoServicio: "REGULAR",
+      tipoServicio: "REGULAR",
       tarifaAplicada: "", ingresoEsperado: "", ingresoReal: "",
       estado: "PROGRAMADO", notas: "",
     },
@@ -163,14 +163,7 @@ export function ServicioForm({ defaultValues, contratos, vehiculos, conductores 
           <Label htmlFor="pasajeros">Pasajeros</Label>
           <Input id="pasajeros" type="number" {...form.register("pasajeros")} />
         </div>
-        <div className="space-y-2">
-          <Label htmlFor="distanciaKm">Distancia estimada (km)</Label>
-          <Input id="distanciaKm" type="number" step="0.1" {...form.register("distanciaKm")} />
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="kmRecorridos">Km recorridos</Label>
-          <Input id="kmRecorridos" type="number" step="0.1" {...form.register("kmRecorridos")} />
-        </div>
+
         <div className="space-y-2">
           <Label htmlFor="tarifaAplicada">Tarifa aplicada</Label>
           <Input id="tarifaAplicada" type="number" step="0.01" {...form.register("tarifaAplicada")} />

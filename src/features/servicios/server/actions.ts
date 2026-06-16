@@ -32,7 +32,7 @@ export async function createServicio(formData: FormData) {
   const parsed = servicioSchema.safeParse(raw);
   if (!parsed.success) throw new Error(parsed.error.issues.map((e: { message: string }) => e.message).join(", "));
 
-  const { fecha, horaSalida, fechaRegreso, horaRegreso, horaInicio, horaFin, distanciaKm, kmRecorridos, tarifaAplicada, ingresoEsperado, ingresoReal, vehiculoId, conductorId, codigo: _codigo, pasajeros, ...rest } = parsed.data; void _codigo;
+  const { fecha, horaSalida, fechaRegreso, horaRegreso, horaInicio, horaFin, tarifaAplicada, ingresoEsperado, ingresoReal, vehiculoId, conductorId, codigo: _codigo, pasajeros, ...rest } = parsed.data; void _codigo;
 
   const rows: { codigo: string | null }[] = await prisma.$queryRawUnsafe(
     `SELECT codigo FROM "servicios"
@@ -58,8 +58,6 @@ export async function createServicio(formData: FormData) {
       horaInicio: horaInicio ? new Date(`${fecha}T${horaInicio}`) : null,
       horaFin: horaFin ? new Date(`${fecha}T${horaFin}`) : null,
       pasajeros: pasajeros ? Number(pasajeros) : null,
-      distanciaKm: distanciaKm ? Number(distanciaKm) : null,
-      kmRecorridos: kmRecorridos ? Number(kmRecorridos) : null,
       tarifaAplicada: Number(tarifaAplicada),
       ingresoEsperado: ingresoEsperado ? Number(ingresoEsperado) : Number(tarifaAplicada),
       ingresoReal: ingresoReal ? Number(ingresoReal) : null,
@@ -78,7 +76,7 @@ export async function updateServicio(id: string, formData: FormData) {
   const parsed = servicioSchema.safeParse(raw);
   if (!parsed.success) throw new Error(parsed.error.issues.map((e: { message: string }) => e.message).join(", "));
 
-  const { fecha, horaSalida, fechaRegreso, horaRegreso, horaInicio, horaFin, distanciaKm, kmRecorridos, tarifaAplicada, ingresoEsperado, ingresoReal, vehiculoId, conductorId, codigo: _codigo, pasajeros, ...rest } = parsed.data; void _codigo;
+  const { fecha, horaSalida, fechaRegreso, horaRegreso, horaInicio, horaFin, tarifaAplicada, ingresoEsperado, ingresoReal, vehiculoId, conductorId, codigo: _codigo, pasajeros, ...rest } = parsed.data; void _codigo;
 
   await prisma.servicio.updateMany({
     where: { id, empresaId: session.user.empresaId },
@@ -93,8 +91,6 @@ export async function updateServicio(id: string, formData: FormData) {
       horaInicio: horaInicio ? new Date(`${fecha}T${horaInicio}`) : null,
       horaFin: horaFin ? new Date(`${fecha}T${horaFin}`) : null,
       pasajeros: pasajeros ? Number(pasajeros) : null,
-      distanciaKm: distanciaKm ? Number(distanciaKm) : null,
-      kmRecorridos: kmRecorridos ? Number(kmRecorridos) : null,
       tarifaAplicada: Number(tarifaAplicada),
       ingresoEsperado: ingresoEsperado ? Number(ingresoEsperado) : Number(tarifaAplicada),
       ingresoReal: ingresoReal ? Number(ingresoReal) : null,

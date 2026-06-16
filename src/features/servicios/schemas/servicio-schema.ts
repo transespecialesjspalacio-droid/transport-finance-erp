@@ -15,8 +15,6 @@ export const servicioSchema = z.object({
   destino: z.string().max(200).optional().or(z.literal("")),
   pasajeros: z.string().optional().or(z.literal("")),
   observacionesOperativas: z.string().optional().or(z.literal("")),
-  distanciaKm: z.string().optional().or(z.literal("")),
-  kmRecorridos: z.string().optional().or(z.literal("")),
   tipoServicio: z.enum(["REGULAR", "EXTRA", "EVENTUAL"]),
   tarifaAplicada: z.string().min(1, "Ingresa la tarifa"),
   ingresoEsperado: z.string().optional().or(z.literal("")),

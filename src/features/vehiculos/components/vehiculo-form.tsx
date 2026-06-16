@@ -24,7 +24,7 @@ export function VehiculoForm({ defaultValues }: Props) {
     resolver: zodResolver(vehiculoSchema),
     defaultValues: defaultValues ?? {
       placa: "", marca: "", modelo: "", anio: "", capacidad: "",
-      tipoVehiculo: "OTRO", propietario: "PROPIO", estado: "DISPONIBLE",
+      tipoVehiculo: "BUSETA", propietario: "PROPIO", estado: "DISPONIBLE",
     },
   });
 
@@ -73,15 +73,12 @@ export function VehiculoForm({ defaultValues }: Props) {
         </div>
         <div className="space-y-2">
           <Label htmlFor="tipoVehiculo">Tipo de vehículo</Label>
-          <Select onValueChange={(v) => form.setValue("tipoVehiculo", v as "CAMION" | "CAMIONETA" | "TRAILER" | "VOLQUETE" | "GRUA" | "OTRO")} defaultValue={defaultValues?.tipoVehiculo ?? "OTRO"}>
+           <Select onValueChange={(v) => form.setValue("tipoVehiculo", v as "BUS" | "BUSETON" | "BUSETA")} defaultValue={defaultValues?.tipoVehiculo ?? "BUSETA"}>
             <SelectTrigger><SelectValue /></SelectTrigger>
             <SelectContent>
-              <SelectItem value="CAMION">Camión</SelectItem>
-              <SelectItem value="CAMIONETA">Camioneta</SelectItem>
-              <SelectItem value="TRAILER">Tráiler</SelectItem>
-              <SelectItem value="VOLQUETE">Volquete</SelectItem>
-              <SelectItem value="GRUA">Grúa</SelectItem>
-              <SelectItem value="OTRO">Otro</SelectItem>
+              <SelectItem value="BUS">Bus</SelectItem>
+              <SelectItem value="BUSETON">Busetón</SelectItem>
+              <SelectItem value="BUSETA">Buseta</SelectItem>
             </SelectContent>
           </Select>
         </div>

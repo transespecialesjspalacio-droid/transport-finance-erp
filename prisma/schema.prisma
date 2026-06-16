@@ -7,6 +7,367 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model Empresa {
+  id            String            @id @default(uuid())
+  nombre        String
+  rfc           String            @unique
+  logo          String?
+  moneda        String            @default("MXN")
+  active        Boolean           @default(true)
+  createdAt     DateTime          @default(now()) @map("created_at")
+  updatedAt     DateTime          @updatedAt @map("updated_at")
+  clientes      Cliente[]
+  conductores   Conductor[]
+  contratos     Contrato[]
+  adjuntos      ContratoAdjunto[]
+  costos        CostoServicio[]
+  cuentasCobrar CuentaCobrar[]
+  cuentasPagar  CuentaPagar[]
+  flujoCaja     FlujoCaja[]
+  servicios     Servicio[]
+  terceros      Tercero[]
+  tiposCosto    TipoCosto[]
+  usuarios      Usuario[]
+  vehiculos     Vehiculo[]
+
+  @@map("empresas")
+}
+
+model Usuario {
+  id            String   @id @default(uuid())
+  empresaId     String   @map("empresa_id")
+  name          String
+  email         String   @unique
+  password      String
+  role          Role     @default(VIEWER)
+  active        Boolean  @default(true)
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+  googleEnabled Boolean  @default(false) @map("google_enabled")
+  empresa       Empresa  @relation(fields: [empresaId], references: [id], onDelete: Cascade)
+
+  @@index([empresaId, email])
+  @@index([empresaId, role])
+  @@map("usuarios")
+}
+
+model Cliente {
+  id               String         @id @default(uuid())
+  empresaId        String         @map("empresa_id")
+  nombre           String
+  rfc              String
+  contactoNombre   String?        @map("contacto_nombre")
+  contactoEmail    String?        @map("contacto_email")
+  contactoTelefono String?        @map("contacto_telefono")
+  direccion        String?
+  active           Boolean        @default(true)
+  createdAt        DateTime       @default(now()) @map("created_at")
+  updatedAt        DateTime       @updatedAt @map("updated_at")
+  codigo           String?        @map("codigo")
+  empresa          Empresa        @relation(fields: [empresaId], references: [id], onDelete: Cascade)
+  contratos        Contrato[]
+  cuentasCobrar    CuentaCobrar[]
+
+  @@index([empresaId, active])
+  @@index([empresaId, nombre])
+  @@map("clientes")
+}
+
+model Contrato {
+  id               String               @id @default(uuid())
+  clienteId        String               @map("cliente_id")
+  empresaId        String               @map("empresa_id")
+  codigo           String
+  nombre           String
+  tipoServicio     TipoServicioContrato @map("tipo_servicio")
+  fechaInicio      DateTime             @map("fecha_inicio")
+  fechaFin         DateTime?            @map("fecha_fin")
+  montoMensual     Decimal?             @map("monto_mensual")
+  condicionPago    CondicionPago        @default(DIAS_30) @map("condicion_pago")
+  active           Boolean              @default(true)
+  notas            String?
+  createdAt        DateTime             @default(now()) @map("created_at")
+  updatedAt        DateTime             @updatedAt @map("updated_at")
+  diaCorte         Int?                 @default(1) @map("dia_corte")
+  periodicidad     Periodicidad?        @map("periodicidad")
+  rentabilidadBase Decimal?             @map("rentabilidad_base")
+  tipoContrato     TipoContrato         @default(POR_SERVICIOS) @map("tipo_contrato")
+  valorRecurrente  Decimal?             @map("valor_recurrente")
+  cliente          Cliente              @relation(fields: [clienteId], references: [id], onDelete: Cascade)
+  empresa          Empresa              @relation(fields: [empresaId], references: [id], onDelete: Cascade)
+  adjuntos         ContratoAdjunto[]
+  costos           CostoServicio[]
+  cuentasCobrar    CuentaCobrar[]
+  servicios        Servicio[]
+
+  @@index([empresaId, active])
+  @@index([empresaId, clienteId])
+  @@index([empresaId, codigo])
+  @@map("contratos")
+}
+
+model ContratoAdjunto {
+  id         String           @id @default(uuid())
+  contratoId String           @map("contrato_id")
+  empresaId  String           @map("empresa_id")
+  nombre     String
+  tipo       String
+  url        String
+  categoria  CategoriaAdjunto @default(OTRO) @map("categoria")
+  createdAt  DateTime         @default(now()) @map("created_at")
+  contrato   Contrato         @relation(fields: [contratoId], references: [id], onDelete: Cascade)
+  empresa    Empresa          @relation(fields: [empresaId], references: [id], onDelete: Cascade)
+
+  @@index([contratoId])
+  @@map("contratos_adjuntos")
+}
+
+model Servicio {
+  id                      String          @id @default(uuid())
+  contratoId              String          @map("contrato_id")
+  empresaId               String          @map("empresa_id")
+  vehiculoId              String?         @map("vehiculo_id")
+  conductorId             String?         @map("conductor_id")
+  fecha                   DateTime
+  horaInicio              DateTime?       @map("hora_inicio")
+  horaFin                 DateTime?       @map("hora_fin")
+  origen                  String?
+  destino                 String?
+  tipoServicio            TipoServicio    @default(REGULAR) @map("tipo_servicio")
+  tarifaAplicada          Decimal         @map("tarifa_aplicada")
+  ingresoEsperado         Decimal         @map("ingreso_esperado")
+  ingresoReal             Decimal?        @map("ingreso_real")
+  estado                  EstadoServicio  @default(PROGRAMADO)
+  notas                   String?
+  createdAt               DateTime        @default(now()) @map("created_at")
+  updatedAt               DateTime        @updatedAt @map("updated_at")
+  codigo                  String?         @map("codigo")
+  fechaRegreso            DateTime?       @map("fecha_regreso")
+  horaRegreso             DateTime?       @map("hora_regreso")
+  horaSalida              DateTime?       @map("hora_salida")
+  observacionesOperativas String?         @map("observaciones_operativas")
+  pasajeros               Int?
+  costos                  CostoServicio[]
+  cuentasCobrar           CuentaCobrar[]
+  cuentasPagar            CuentaPagar[]
+  conductor               Conductor?      @relation(fields: [conductorId], references: [id])
+  contrato                Contrato        @relation(fields: [contratoId], references: [id], onDelete: Cascade)
+  empresa                 Empresa         @relation(fields: [empresaId], references: [id], onDelete: Cascade)
+  vehiculo                Vehiculo?       @relation(fields: [vehiculoId], references: [id])
+
+  @@index([empresaId, estado])
+  @@index([empresaId, fecha])
+  @@index([empresaId, estado, fecha])
+  @@index([empresaId, contratoId])
+  @@index([empresaId, vehiculoId])
+  @@index([empresaId, conductorId])
+  @@map("servicios")
+}
+
+model CostoServicio {
+  id          String    @id @default(uuid())
+  servicioId  String    @map("servicio_id")
+  empresaId   String    @map("empresa_id")
+  tipoCostoId String    @map("tipo_costo_id")
+  descripcion String
+  monto       Decimal
+  cantidad    Decimal   @default(1)
+  total       Decimal
+  fecha       DateTime
+  createdAt   DateTime  @default(now()) @map("created_at")
+  terceroId   String?   @map("tercero_id")
+  contratoId  String?   @map("contrato_id")
+  vehiculoId  String?   @map("vehiculo_id")
+  contrato    Contrato? @relation(fields: [contratoId], references: [id])
+  empresa     Empresa   @relation(fields: [empresaId], references: [id], onDelete: Cascade)
+  servicio    Servicio  @relation(fields: [servicioId], references: [id], onDelete: Cascade)
+  tercero     Tercero?  @relation(fields: [terceroId], references: [id])
+  tipoCosto   TipoCosto @relation(fields: [tipoCostoId], references: [id])
+  vehiculo    Vehiculo? @relation(fields: [vehiculoId], references: [id])
+
+  @@index([empresaId, servicioId])
+  @@index([empresaId, terceroId])
+  @@index([empresaId, fecha])
+  @@index([empresaId, vehiculoId])
+  @@index([empresaId, contratoId])
+  @@map("costos_servicio")
+}
+
+model TipoCosto {
+  id        String          @id @default(uuid())
+  empresaId String          @map("empresa_id")
+  nombre    String
+  categoria CategoriaCosto  @default(VARIABLE)
+  active    Boolean         @default(true)
+  createdAt DateTime        @default(now()) @map("created_at")
+  costos    CostoServicio[]
+  empresa   Empresa         @relation(fields: [empresaId], references: [id], onDelete: Cascade)
+
+  @@index([empresaId, active])
+  @@map("tipos_costo")
+}
+
+model Tercero {
+  id           String          @id @default(uuid())
+  empresaId    String          @map("empresa_id")
+  nombre       String
+  rfc          String?
+  tipoTercero  TipoTercero     @default(OTRO) @map("tipo_tercero")
+  contacto     String?
+  active       Boolean         @default(true)
+  createdAt    DateTime        @default(now()) @map("created_at")
+  codigo       String?         @map("codigo")
+  costos       CostoServicio[]
+  cuentasPagar CuentaPagar[]
+  empresa      Empresa         @relation(fields: [empresaId], references: [id], onDelete: Cascade)
+
+  @@index([empresaId, active])
+  @@index([empresaId, tipoTercero])
+  @@map("terceros")
+}
+
+model CuentaCobrar {
+  id               String       @id @default(uuid())
+  empresaId        String       @map("empresa_id")
+  contratoId       String       @map("contrato_id")
+  clienteId        String       @map("cliente_id")
+  servicioId       String?      @map("servicio_id")
+  facturaId        String?      @map("factura_id")
+  montoTotal       Decimal      @map("monto_total")
+  saldoPendiente   Decimal      @map("saldo_pendiente")
+  fechaEmision     DateTime     @map("fecha_emision")
+  fechaVencimiento DateTime     @map("fecha_vencimiento")
+  estado           EstadoCuenta @default(PENDIENTE)
+  createdAt        DateTime     @default(now()) @map("created_at")
+  cobros           Cobro[]
+  cliente          Cliente      @relation(fields: [clienteId], references: [id])
+  contrato         Contrato     @relation(fields: [contratoId], references: [id])
+  empresa          Empresa      @relation(fields: [empresaId], references: [id], onDelete: Cascade)
+  servicio         Servicio?    @relation(fields: [servicioId], references: [id])
+
+  @@index([empresaId, estado])
+  @@index([empresaId, fechaVencimiento])
+  @@index([empresaId, estado, fechaVencimiento])
+  @@index([empresaId, clienteId])
+  @@index([empresaId, contratoId])
+  @@map("cuentas_cobrar")
+}
+
+model Cobro {
+  id             String       @id @default(uuid())
+  cuentaCobrarId String       @map("cuenta_cobrar_id")
+  monto          Decimal
+  fechaPago      DateTime     @map("fecha_pago")
+  metodoPago     MetodoPago   @default(TRANSFERENCIA) @map("metodo_pago")
+  referencia     String?
+  createdAt      DateTime     @default(now()) @map("created_at")
+  cuentaCobrar   CuentaCobrar @relation(fields: [cuentaCobrarId], references: [id], onDelete: Cascade)
+
+  @@index([cuentaCobrarId, fechaPago])
+  @@map("cobros")
+}
+
+model CuentaPagar {
+  id               String       @id @default(uuid())
+  empresaId        String       @map("empresa_id")
+  servicioId       String?      @map("servicio_id")
+  montoTotal       Decimal      @map("monto_total")
+  saldoPendiente   Decimal      @map("saldo_pendiente")
+  fechaEmision     DateTime     @map("fecha_emision")
+  fechaVencimiento DateTime     @map("fecha_vencimiento")
+  estado           EstadoCuenta @default(PENDIENTE)
+  createdAt        DateTime     @default(now()) @map("created_at")
+  terceroId        String       @map("tercero_id")
+  numero           String?      @map("numero")
+  empresa          Empresa      @relation(fields: [empresaId], references: [id], onDelete: Cascade)
+  servicio         Servicio?    @relation(fields: [servicioId], references: [id])
+  tercero          Tercero      @relation(fields: [terceroId], references: [id])
+  pagos            Pago[]
+
+  @@index([empresaId, estado])
+  @@index([empresaId, fechaVencimiento])
+  @@index([empresaId, estado, fechaVencimiento])
+  @@index([empresaId, terceroId])
+  @@map("cuentas_pagar")
+}
+
+model Pago {
+  id            String      @id @default(uuid())
+  cuentaPagarId String      @map("cuenta_pagar_id")
+  monto         Decimal
+  fechaPago     DateTime    @map("fecha_pago")
+  metodoPago    MetodoPago  @default(TRANSFERENCIA) @map("metodo_pago")
+  referencia    String?
+  createdAt     DateTime    @default(now()) @map("created_at")
+  cuentaPagar   CuentaPagar @relation(fields: [cuentaPagarId], references: [id], onDelete: Cascade)
+
+  @@index([cuentaPagarId, fechaPago])
+  @@map("pagos")
+}
+
+model Vehiculo {
+  id                            String              @id @default(uuid())
+  empresaId                     String              @map("empresa_id")
+  placa                         String              @unique
+  marca                         String
+  modelo                        String
+  anio                          Int
+  capacidad                     Int
+  active                        Boolean             @default(true)
+  createdAt                     DateTime            @default(now()) @map("created_at")
+  estado                        EstadoVehiculo      @default(DISPONIBLE)
+  propietario                   PropietarioVehiculo @default(PROPIO)
+  tipoVehiculo                 TipoVehiculo        @default(BUSETA) @map("tipo_vehiculo")
+  updatedAt                     DateTime            @default(now()) @updatedAt @map("updated_at")
+  fechaVencimientoPoliza        DateTime?           @map("fecha_vencimiento_poliza")
+  fechaVencimientoSOAT          DateTime?           @map("fecha_vencimiento_soat")
+  fechaVencimientoTecnomecanica DateTime?           @map("fecha_vencimiento_tecnomecanica")
+  observaciones                 String?
+  costos                        CostoServicio[]
+  servicios                     Servicio[]
+  empresa                       Empresa             @relation(fields: [empresaId], references: [id], onDelete: Cascade)
+
+  @@index([empresaId, active])
+  @@map("vehiculos")
+}
+
+model Conductor {
+  id               String          @id @default(uuid())
+  empresaId        String          @map("empresa_id")
+  nombre           String
+  licencia         String
+  telefono         String?
+  active           Boolean         @default(true)
+  createdAt        DateTime        @default(now()) @map("created_at")
+  categoria        String?         @map("categoria")
+  documento        String?         @map("documento")
+  estado           EstadoConductor @default(DISPONIBLE)
+  fechaVencimiento DateTime?       @map("fecha_vencimiento")
+  updatedAt        DateTime        @default(now()) @updatedAt @map("updated_at")
+  empresa          Empresa         @relation(fields: [empresaId], references: [id], onDelete: Cascade)
+  servicios        Servicio[]
+
+  @@index([empresaId, active])
+  @@map("conductores")
+}
+
+model FlujoCaja {
+  id             String        @id @default(uuid())
+  empresaId      String        @map("empresa_id")
+  fecha          DateTime
+  saldoInicial   Decimal       @map("saldo_inicial")
+  ingresosDelDia Decimal       @map("ingresos_del_dia")
+  egresosDelDia  Decimal       @map("egresos_del_dia")
+  saldoFinal     Decimal       @map("saldo_final")
+  tipo           TipoFlujoCaja @default(REAL)
+  createdAt      DateTime      @default(now()) @map("created_at")
+  empresa        Empresa       @relation(fields: [empresaId], references: [id], onDelete: Cascade)
+
+  @@index([empresaId, fecha])
+  @@index([empresaId, tipo])
+  @@map("flujo_caja")
+}
+
 enum Role {
   ADMIN
   OPS
@@ -74,12 +435,9 @@ enum TipoFlujoCaja {
 }
 
 enum TipoVehiculo {
-  CAMION
-  CAMIONETA
-  TRAILER
-  VOLQUETE
-  GRUA
-  OTRO
+  BUS
+  BUSETON
+  BUSETA
 }
 
 enum PropietarioVehiculo {
@@ -119,383 +477,4 @@ enum CategoriaAdjunto {
   ACTA
   SOPORTE
   OTRO
-}
-
-model Empresa {
-  id        String   @id @default(uuid())
-  nombre    String
-  rfc       String   @unique
-  logo      String?
-  moneda    String   @default("MXN")
-  active    Boolean  @default(true)
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
-
-  usuarios     Usuario[]
-  clientes     Cliente[]
-  contratos    Contrato[]
-  servicios    Servicio[]
-  costos       CostoServicio[]
-  tiposCosto   TipoCosto[]
-  terceros     Tercero[]
-  vehiculos    Vehiculo[]
-  conductores  Conductor[]
-  cuentasCobrar CuentaCobrar[]
-  cuentasPagar CuentaPagar[]
-  adjuntos     ContratoAdjunto[]
-  flujoCaja    FlujoCaja[]
-
-  @@map("empresas")
-}
-
-model Usuario {
-  id            String   @id @default(uuid())
-  empresaId     String   @map("empresa_id")
-  name          String
-  email         String   @unique
-  password      String
-  role          Role     @default(VIEWER)
-  active        Boolean  @default(true)
-  googleEnabled Boolean  @default(false) @map("google_enabled")
-  createdAt     DateTime @default(now()) @map("created_at")
-  updatedAt     DateTime @updatedAt @map("updated_at")
-
-  empresa Empresa @relation(fields: [empresaId], references: [id], onDelete: Cascade)
-
-  @@index([empresaId, email])
-  @@index([empresaId, role])
-  @@map("usuarios")
-}
-
-model Cliente {
-  id              String   @id @default(uuid())
-  empresaId       String   @map("empresa_id")
-  codigo          String?  @map("codigo")
-  nombre          String
-  rfc             String
-  contactoNombre  String?  @map("contacto_nombre")
-  contactoEmail   String?  @map("contacto_email")
-  contactoTelefono String? @map("contacto_telefono")
-  direccion       String?
-  active          Boolean  @default(true)
-  createdAt       DateTime @default(now()) @map("created_at")
-  updatedAt       DateTime @updatedAt @map("updated_at")
-
-  empresa       Empresa      @relation(fields: [empresaId], references: [id], onDelete: Cascade)
-  contratos     Contrato[]
-  cuentasCobrar CuentaCobrar[]
-
-  @@index([empresaId, active])
-  @@index([empresaId, nombre])
-  @@map("clientes")
-}
-
-model Contrato {
-  id              String              @id @default(uuid())
-  clienteId       String              @map("cliente_id")
-  empresaId       String              @map("empresa_id")
-  codigo          String
-  nombre          String
-  tipoServicio    TipoServicioContrato @map("tipo_servicio")
-  tipoContrato    TipoContrato         @default(POR_SERVICIOS) @map("tipo_contrato")
-  periodicidad    Periodicidad?        @map("periodicidad")
-  valorRecurrente Decimal?             @map("valor_recurrente")
-  rentabilidadBase Decimal?            @map("rentabilidad_base")
-  diaCorte        Int?                 @default(1) @map("dia_corte")
-  fechaInicio     DateTime             @map("fecha_inicio")
-  fechaFin        DateTime?            @map("fecha_fin")
-  montoMensual    Decimal?             @map("monto_mensual")
-  condicionPago   CondicionPago        @default(DIAS_30) @map("condicion_pago")
-  active          Boolean              @default(true)
-  notas           String?
-  createdAt       DateTime             @default(now()) @map("created_at")
-  updatedAt       DateTime             @updatedAt @map("updated_at")
-
-  cliente       Cliente           @relation(fields: [clienteId], references: [id], onDelete: Cascade)
-  empresa       Empresa           @relation(fields: [empresaId], references: [id], onDelete: Cascade)
-  servicios     Servicio[]
-  cuentasCobrar CuentaCobrar[]
-  adjuntos      ContratoAdjunto[]
-  costos        CostoServicio[]
-
-  @@index([empresaId, active])
-  @@index([empresaId, clienteId])
-  @@index([empresaId, codigo])
-  @@map("contratos")
-}
-
-model ContratoAdjunto {
-  id          String           @id @default(uuid())
-  contratoId  String           @map("contrato_id")
-  empresaId   String           @map("empresa_id")
-  nombre      String
-  tipo        String
-  url         String
-  categoria   CategoriaAdjunto @default(OTRO) @map("categoria")
-  createdAt   DateTime         @default(now()) @map("created_at")
-
-  contrato Contrato @relation(fields: [contratoId], references: [id], onDelete: Cascade)
-  empresa  Empresa  @relation(fields: [empresaId], references: [id], onDelete: Cascade)
-
-  @@index([contratoId])
-  @@map("contratos_adjuntos")
-}
-
-model Servicio {
-  id             String          @id @default(uuid())
-  codigo         String?         @map("codigo")
-  contratoId     String          @map("contrato_id")
-  empresaId      String          @map("empresa_id")
-  vehiculoId     String?         @map("vehiculo_id")
-  conductorId    String?         @map("conductor_id")
-  fecha          DateTime
-  horaSalida     DateTime?       @map("hora_salida")
-  fechaRegreso   DateTime?       @map("fecha_regreso")
-  horaRegreso    DateTime?       @map("hora_regreso")
-  horaInicio     DateTime?       @map("hora_inicio")
-  horaFin        DateTime?       @map("hora_fin")
-  origen         String?
-  destino        String?
-  pasajeros      Int?
-  observacionesOperativas String? @map("observaciones_operativas")
-  distanciaKm    Decimal?        @map("distancia_km")
-  kmRecorridos   Decimal?        @map("km_recorridos")
-  tipoServicio   TipoServicio    @default(REGULAR) @map("tipo_servicio")
-  tarifaAplicada Decimal         @map("tarifa_aplicada")
-  ingresoEsperado Decimal        @map("ingreso_esperado")
-  ingresoReal    Decimal?        @map("ingreso_real")
-  estado         EstadoServicio  @default(PROGRAMADO)
-  notas          String?
-  createdAt      DateTime        @default(now()) @map("created_at")
-  updatedAt      DateTime        @updatedAt @map("updated_at")
-
-  contrato      Contrato        @relation(fields: [contratoId], references: [id], onDelete: Cascade)
-  empresa       Empresa         @relation(fields: [empresaId], references: [id], onDelete: Cascade)
-  vehiculo      Vehiculo?       @relation(fields: [vehiculoId], references: [id])
-  conductor     Conductor?      @relation(fields: [conductorId], references: [id])
-  costos        CostoServicio[]
-  cuentasCobrar CuentaCobrar[]
-  cuentasPagar  CuentaPagar[]
-
-  @@index([empresaId, estado])
-  @@index([empresaId, fecha])
-  @@index([empresaId, estado, fecha])
-  @@index([empresaId, contratoId])
-  @@index([empresaId, vehiculoId])
-  @@index([empresaId, conductorId])
-  @@map("servicios")
-}
-
-model CostoServicio {
-  id          String        @id @default(uuid())
-  servicioId  String        @map("servicio_id")
-  empresaId   String        @map("empresa_id")
-  tipoCostoId String        @map("tipo_costo_id")
-  terceroId   String?       @map("tercero_id")
-  vehiculoId  String?       @map("vehiculo_id")
-  contratoId  String?       @map("contrato_id")
-  descripcion String
-  monto       Decimal
-  cantidad    Decimal       @default(1)
-  total       Decimal
-  fecha       DateTime
-  createdAt   DateTime      @default(now()) @map("created_at")
-
-  servicio  Servicio   @relation(fields: [servicioId], references: [id], onDelete: Cascade)
-  empresa   Empresa    @relation(fields: [empresaId], references: [id], onDelete: Cascade)
-  tipoCosto TipoCosto  @relation(fields: [tipoCostoId], references: [id])
-  tercero   Tercero?   @relation(fields: [terceroId], references: [id])
-  vehiculo  Vehiculo?  @relation(fields: [vehiculoId], references: [id])
-  contrato  Contrato?  @relation(fields: [contratoId], references: [id])
-
-  @@index([empresaId, servicioId])
-  @@index([empresaId, terceroId])
-  @@index([empresaId, fecha])
-  @@index([empresaId, vehiculoId])
-  @@index([empresaId, contratoId])
-  @@map("costos_servicio")
-}
-
-model TipoCosto {
-  id        String         @id @default(uuid())
-  empresaId String         @map("empresa_id")
-  nombre    String
-  categoria CategoriaCosto @default(VARIABLE)
-  active    Boolean        @default(true)
-  createdAt DateTime       @default(now()) @map("created_at")
-
-  empresa Empresa        @relation(fields: [empresaId], references: [id], onDelete: Cascade)
-  costos  CostoServicio[]
-
-  @@index([empresaId, active])
-  @@map("tipos_costo")
-}
-
-model Tercero {
-  id          String      @id @default(uuid())
-  empresaId   String      @map("empresa_id")
-  codigo      String?     @map("codigo")
-  nombre      String
-  rfc         String?
-  tipoTercero TipoTercero @default(OTRO) @map("tipo_tercero")
-  contacto    String?
-  active      Boolean     @default(true)
-  createdAt   DateTime    @default(now()) @map("created_at")
-
-  empresa      Empresa        @relation(fields: [empresaId], references: [id], onDelete: Cascade)
-  costos       CostoServicio[]
-  cuentasPagar CuentaPagar[]
-
-  @@index([empresaId, active])
-  @@index([empresaId, tipoTercero])
-  @@map("terceros")
-}
-
-model CuentaCobrar {
-  id             String         @id @default(uuid())
-  empresaId      String         @map("empresa_id")
-  contratoId     String         @map("contrato_id")
-  clienteId      String         @map("cliente_id")
-  servicioId     String?        @map("servicio_id")
-  facturaId      String?        @map("factura_id")
-  montoTotal     Decimal        @map("monto_total")
-  saldoPendiente Decimal        @map("saldo_pendiente")
-  fechaEmision   DateTime       @map("fecha_emision")
-  fechaVencimiento DateTime     @map("fecha_vencimiento")
-  estado         EstadoCuenta   @default(PENDIENTE)
-  createdAt      DateTime       @default(now()) @map("created_at")
-
-  empresa  Empresa   @relation(fields: [empresaId], references: [id], onDelete: Cascade)
-  contrato Contrato  @relation(fields: [contratoId], references: [id])
-  cliente  Cliente   @relation(fields: [clienteId], references: [id])
-  servicio Servicio? @relation(fields: [servicioId], references: [id])
-  cobros   Cobro[]
-
-  @@index([empresaId, estado])
-  @@index([empresaId, fechaVencimiento])
-  @@index([empresaId, estado, fechaVencimiento])
-  @@index([empresaId, clienteId])
-  @@index([empresaId, contratoId])
-  @@map("cuentas_cobrar")
-}
-
-model Cobro {
-  id             String      @id @default(uuid())
-  cuentaCobrarId String      @map("cuenta_cobrar_id")
-  monto          Decimal
-  fechaPago      DateTime    @map("fecha_pago")
-  metodoPago     MetodoPago  @default(TRANSFERENCIA) @map("metodo_pago")
-  referencia     String?
-  createdAt      DateTime    @default(now()) @map("created_at")
-
-  cuentaCobrar CuentaCobrar @relation(fields: [cuentaCobrarId], references: [id], onDelete: Cascade)
-
-  @@index([cuentaCobrarId, fechaPago])
-  @@map("cobros")
-}
-
-model CuentaPagar {
-  id              String         @id @default(uuid())
-  numero          String?        @map("numero")
-  empresaId       String         @map("empresa_id")
-  terceroId       String         @map("tercero_id")
-  servicioId      String?        @map("servicio_id")
-  montoTotal      Decimal        @map("monto_total")
-  saldoPendiente  Decimal        @map("saldo_pendiente")
-  fechaEmision    DateTime       @map("fecha_emision")
-  fechaVencimiento DateTime      @map("fecha_vencimiento")
-  estado          EstadoCuenta   @default(PENDIENTE)
-  createdAt       DateTime       @default(now()) @map("created_at")
-
-  empresa   Empresa   @relation(fields: [empresaId], references: [id], onDelete: Cascade)
-  tercero   Tercero   @relation(fields: [terceroId], references: [id])
-  servicio  Servicio? @relation(fields: [servicioId], references: [id])
-  pagos     Pago[]
-
-  @@index([empresaId, estado])
-  @@index([empresaId, fechaVencimiento])
-  @@index([empresaId, estado, fechaVencimiento])
-  @@index([empresaId, terceroId])
-  @@map("cuentas_pagar")
-}
-
-model Pago {
-  id            String     @id @default(uuid())
-  cuentaPagarId String     @map("cuenta_pagar_id")
-  monto         Decimal
-  fechaPago     DateTime   @map("fecha_pago")
-  metodoPago    MetodoPago @default(TRANSFERENCIA) @map("metodo_pago")
-  referencia    String?
-  createdAt     DateTime   @default(now()) @map("created_at")
-
-  cuentaPagar CuentaPagar @relation(fields: [cuentaPagarId], references: [id], onDelete: Cascade)
-
-  @@index([cuentaPagarId, fechaPago])
-  @@map("pagos")
-}
-
-model Vehiculo {
-  id                           String              @id @default(uuid())
-  empresaId                    String              @map("empresa_id")
-  placa                        String              @unique
-  marca                        String
-  modelo                       String
-  anio                         Int
-  capacidad                    Int
-  tipoVehiculo                 TipoVehiculo        @default(OTRO) @map("tipo_vehiculo")
-  propietario                  PropietarioVehiculo @default(PROPIO)
-  estado                       EstadoVehiculo      @default(DISPONIBLE)
-  active                       Boolean             @default(true)
-  fechaVencimientoSOAT         DateTime?           @map("fecha_vencimiento_soat")
-  fechaVencimientoTecnomecanica DateTime?          @map("fecha_vencimiento_tecnomecanica")
-  fechaVencimientoPoliza       DateTime?           @map("fecha_vencimiento_poliza")
-  observaciones                String?
-  createdAt                    DateTime            @default(now()) @map("created_at")
-  updatedAt                    DateTime            @updatedAt @default(now()) @map("updated_at")
-
-  empresa   Empresa    @relation(fields: [empresaId], references: [id], onDelete: Cascade)
-  servicios Servicio[]
-  costos    CostoServicio[]
-
-  @@index([empresaId, active])
-  @@map("vehiculos")
-}
-
-model Conductor {
-  id              String           @id @default(uuid())
-  empresaId       String           @map("empresa_id")
-  nombre          String
-  documento       String?          @map("documento")
-  licencia        String
-  categoria       String?          @map("categoria")
-  telefono        String?
-  fechaVencimiento DateTime?       @map("fecha_vencimiento")
-  estado          EstadoConductor  @default(DISPONIBLE)
-  active          Boolean          @default(true)
-  createdAt       DateTime         @default(now()) @map("created_at")
-  updatedAt       DateTime         @updatedAt @default(now()) @map("updated_at")
-
-  empresa   Empresa    @relation(fields: [empresaId], references: [id], onDelete: Cascade)
-  servicios Servicio[]
-
-  @@index([empresaId, active])
-  @@map("conductores")
-}
-
-model FlujoCaja {
-  id             String         @id @default(uuid())
-  empresaId      String         @map("empresa_id")
-  fecha          DateTime
-  saldoInicial   Decimal        @map("saldo_inicial")
-  ingresosDelDia Decimal        @map("ingresos_del_dia")
-  egresosDelDia  Decimal        @map("egresos_del_dia")
-  saldoFinal     Decimal        @map("saldo_final")
-  tipo           TipoFlujoCaja  @default(REAL)
-  createdAt      DateTime       @default(now()) @map("created_at")
-
-  empresa Empresa @relation(fields: [empresaId], references: [id], onDelete: Cascade)
-
-  @@index([empresaId, fecha])
-  @@index([empresaId, tipo])
-  @@map("flujo_caja")
 }
