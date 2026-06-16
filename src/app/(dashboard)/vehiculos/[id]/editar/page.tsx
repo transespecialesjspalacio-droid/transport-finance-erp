@@ -8,10 +8,17 @@ export default async function EditarVehiculoPage(props: { params: Promise<{ id: 
   const vehiculo = await getVehiculo(id);
   if (!vehiculo) notFound();
 
+  function fmtDate(d: Date | null | undefined) {
+    if (!d) return undefined;
+    return d.toISOString().split("T")[0];
+  }
   const defaultValues = {
     ...vehiculo,
     anio: vehiculo.anio.toString(),
     capacidad: vehiculo.capacidad.toString(),
+    fechaVencimientoSOAT: fmtDate(vehiculo.fechaVencimientoSOAT),
+    fechaVencimientoTecnomecanica: fmtDate(vehiculo.fechaVencimientoTecnomecanica),
+    fechaVencimientoPoliza: fmtDate(vehiculo.fechaVencimientoPoliza),
   };
 
   return (

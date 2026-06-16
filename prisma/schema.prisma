@@ -429,19 +429,23 @@ model Pago {
 }
 
 model Vehiculo {
-  id           String              @id @default(uuid())
-  empresaId    String              @map("empresa_id")
-  placa        String              @unique
-  marca        String
-  modelo       String
-  anio         Int
-  capacidad    Int
-  tipoVehiculo TipoVehiculo        @default(OTRO) @map("tipo_vehiculo")
-  propietario  PropietarioVehiculo @default(PROPIO)
-  estado       EstadoVehiculo      @default(DISPONIBLE)
-  active       Boolean             @default(true)
-  createdAt    DateTime            @default(now()) @map("created_at")
-  updatedAt    DateTime            @updatedAt @default(now()) @map("updated_at")
+  id                           String              @id @default(uuid())
+  empresaId                    String              @map("empresa_id")
+  placa                        String              @unique
+  marca                        String
+  modelo                       String
+  anio                         Int
+  capacidad                    Int
+  tipoVehiculo                 TipoVehiculo        @default(OTRO) @map("tipo_vehiculo")
+  propietario                  PropietarioVehiculo @default(PROPIO)
+  estado                       EstadoVehiculo      @default(DISPONIBLE)
+  active                       Boolean             @default(true)
+  fechaVencimientoSOAT         DateTime?           @map("fecha_vencimiento_soat")
+  fechaVencimientoTecnomecanica DateTime?          @map("fecha_vencimiento_tecnomecanica")
+  fechaVencimientoPoliza       DateTime?           @map("fecha_vencimiento_poliza")
+  observaciones                String?
+  createdAt                    DateTime            @default(now()) @map("created_at")
+  updatedAt                    DateTime            @updatedAt @default(now()) @map("updated_at")
 
   empresa   Empresa    @relation(fields: [empresaId], references: [id], onDelete: Cascade)
   servicios Servicio[]

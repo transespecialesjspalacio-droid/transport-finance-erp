@@ -31,7 +31,7 @@ export default async function DashboardPage() {
         </p>
       </div>
 
-      <KpiGrid kpis={data.kpis} serviciosHoy={data.serviciosHoy} />
+      <KpiGrid kpis={data.kpis} serviciosHoy={data.serviciosHoy} flota={data.flota} />
 
       <ResumenEjecutivo resumen={data.resumen} />
 
@@ -69,6 +69,7 @@ export default async function DashboardPage() {
         </ChartCard>
         <DashboardAlertas
           alertas={data.alertas}
+          alertasFlota={data.alertasFlota}
           contratosBajoMargen={data.contratosBajoMargen}
           carteraVencida={data.carteraVencida}
           pagosVencidos={data.pagosVencidos}

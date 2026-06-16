@@ -14,11 +14,15 @@ export async function createVehiculo(formData: FormData) {
   const parsed = vehiculoSchema.safeParse(raw);
   if (!parsed.success) throw new Error(parsed.error.issues.map((e: { message: string }) => e.message).join(", "));
 
+  const { fechaVencimientoSOAT, fechaVencimientoTecnomecanica, fechaVencimientoPoliza, ...rest } = parsed.data;
   await prisma.vehiculo.create({
     data: {
-      ...parsed.data,
+      ...rest,
       anio: Number(parsed.data.anio),
       capacidad: Number(parsed.data.capacidad),
+      fechaVencimientoSOAT: fechaVencimientoSOAT ? new Date(fechaVencimientoSOAT) : null,
+      fechaVencimientoTecnomecanica: fechaVencimientoTecnomecanica ? new Date(fechaVencimientoTecnomecanica) : null,
+      fechaVencimientoPoliza: fechaVencimientoPoliza ? new Date(fechaVencimientoPoliza) : null,
       empresaId: session.user.empresaId,
     },
   });
@@ -35,12 +39,16 @@ export async function updateVehiculo(id: string, formData: FormData) {
   const parsed = vehiculoSchema.safeParse(raw);
   if (!parsed.success) throw new Error(parsed.error.issues.map((e: { message: string }) => e.message).join(", "));
 
+  const { fechaVencimientoSOAT, fechaVencimientoTecnomecanica, fechaVencimientoPoliza, ...rest } = parsed.data;
   await prisma.vehiculo.updateMany({
     where: { id, empresaId: session.user.empresaId },
     data: {
-      ...parsed.data,
+      ...rest,
       anio: Number(parsed.data.anio),
       capacidad: Number(parsed.data.capacidad),
+      fechaVencimientoSOAT: fechaVencimientoSOAT ? new Date(fechaVencimientoSOAT) : null,
+      fechaVencimientoTecnomecanica: fechaVencimientoTecnomecanica ? new Date(fechaVencimientoTecnomecanica) : null,
+      fechaVencimientoPoliza: fechaVencimientoPoliza ? new Date(fechaVencimientoPoliza) : null,
     },
   });
 

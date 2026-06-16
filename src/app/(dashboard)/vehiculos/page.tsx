@@ -1,13 +1,15 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
+import { Plus, AlertTriangle } from "lucide-react";
 import { PageHeader } from "@/components/shared/page-header";
 import { SearchInput } from "@/components/shared/search-input";
 import { Pagination } from "@/components/shared/pagination";
 import { DataTable } from "@/components/shared/data-table";
 import { Badge } from "@/components/ui/badge";
-import { getVehiculos } from "@/features/vehiculos/server/queries";
+import { getVehiculos, getAlertasFlota } from "@/features/vehiculos/server/queries";
+import { auth } from "@/lib/auth";
 import { deleteVehiculo } from "@/features/vehiculos/server/actions";
+import { formatDate } from "@/lib/utils";
 
 const tipoLabels: Record<string, string> = {
   CAMION: "Camión", CAMIONETA: "Camioneta", TRAILER: "Tráiler",
@@ -25,9 +27,15 @@ const estadoLabels: Record<string, string> = {
   EN_MANTENIMIENTO: "En mantenimiento", FUERA_DE_SERVICIO: "Fuera de servicio",
 };
 
+const tipoAlertaLabels: Record<string, string> = {
+  SOAT: "SOAT", TECNOMECANICA: "Tecnomecánica", POLIZA: "Póliza",
+};
+
 export default async function VehiculosPage(props: { searchParams: Promise<Record<string, string>> }) {
   const searchParams = await props.searchParams;
+  const session = await auth();
   const { data, total, totalPages, currentPage } = await getVehiculos(searchParams);
+  const alertasFlota = session?.user?.empresaId ? await getAlertasFlota(session.user.empresaId) : [];
 
   return (
     <div>
@@ -36,6 +44,24 @@ export default async function VehiculosPage(props: { searchParams: Promise<Recor
           <Button><Plus className="mr-2 h-4 w-4" />Nuevo vehículo</Button>
         </Link>
       </PageHeader>
+
+      {alertasFlota.length > 0 && (
+        <div className="mb-4 space-y-2">
+          {alertasFlota.slice(0, 10).map((a, i) => (
+            <div key={i} className="flex items-start gap-3 rounded-lg border border-amber-300 bg-amber-50 dark:bg-amber-950/20 dark:border-amber-800 p-3">
+              <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-amber-600" />
+              <div className="text-sm">
+                <span className="font-medium">{tipoAlertaLabels[a.tipo]}</span> — <Link href={`/vehiculos/${a.vehiculoId}`} className="underline">{a.placa}</Link>
+                <span className="text-muted-foreground ml-1">
+                  {a.diasRestantes < 0
+                    ? `vencido hace ${Math.abs(a.diasRestantes)}d`
+                    : `vence en ${a.diasRestantes}d (${formatDate(a.fechaVencimiento)})`}
+                </span>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
 
       <div className="mb-4">
         <SearchInput placeholder="Buscar por placa, marca o modelo..." />

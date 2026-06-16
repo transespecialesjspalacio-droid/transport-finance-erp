@@ -2,8 +2,17 @@ import { KpiCard } from "@/components/charts/kpi-card";
 import { formatCurrency } from "@/lib/utils";
 import {
   DollarSign, TrendingDown, Receipt, CreditCard,
-  TrendingUp, Wallet, Percent, Bus, Repeat, PiggyBank, ChartNoAxesColumn, Landmark,
+  TrendingUp, Wallet, Percent, Bus, Repeat, PiggyBank, ChartNoAxesColumn, Landmark, Car,
 } from "lucide-react";
+
+interface Flota {
+  vehiculosActivos: number;
+  vehiculosPropios: number;
+  vehiculosTerceros: number;
+  utilidadTotalFlota: number;
+  vehiculoMasRentable: { placa: string; marca: string; modelo: string; utilidad: number } | null;
+  vehiculoMenosRentable: { placa: string; marca: string; modelo: string; utilidad: number } | null;
+}
 
 interface Kpis {
   ingresosServicios: number;
@@ -24,9 +33,10 @@ interface Kpis {
 interface Props {
   kpis: Kpis;
   serviciosHoy: { total: number; enCurso: number; programados: number };
+  flota: Flota;
 }
 
-export function KpiGrid({ kpis, serviciosHoy }: Props) {
+export function KpiGrid({ kpis, serviciosHoy, flota }: Props) {
   return (
     <div className="space-y-6">
       <div>
@@ -82,6 +92,20 @@ export function KpiGrid({ kpis, serviciosHoy }: Props) {
             value={formatCurrency(kpis.utilidadEmpresarialProyectada)}
             icon={<TrendingUp className="h-5 w-5" />}
             trend={kpis.utilidadEmpresarialProyectada >= 0 ? "up" : "down"}
+          />
+        </div>
+      </div>
+
+      <div>
+        <h2 className="mb-3 text-sm font-semibold uppercase tracking-wider text-muted-foreground">Flota</h2>
+        <div className="mb-6 grid gap-4 md:grid-cols-3">
+          <KpiCard title="Vehículos Activos" value={String(flota.vehiculosActivos)} icon={<Car className="h-5 w-5" />} description={`${flota.vehiculosPropios} propios, ${flota.vehiculosTerceros} terceros`} />
+          <KpiCard title="Utilidad Total Flota" value={formatCurrency(flota.utilidadTotalFlota)} icon={<ChartNoAxesColumn className="h-5 w-5" />} trend={flota.utilidadTotalFlota >= 0 ? "up" : "down"} />
+          <KpiCard
+            title={flota.vehiculoMasRentable ? `Más rentable: ${flota.vehiculoMasRentable.placa}` : "Más rentable"}
+            value={flota.vehiculoMasRentable ? formatCurrency(flota.vehiculoMasRentable.utilidad) : "—"}
+            icon={<TrendingUp className="h-5 w-5" />}
+            description={flota.vehiculoMasRentable ? `${flota.vehiculoMasRentable.marca} ${flota.vehiculoMasRentable.modelo}` : undefined}
           />
         </div>
       </div>

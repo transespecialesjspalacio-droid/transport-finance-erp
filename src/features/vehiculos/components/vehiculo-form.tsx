@@ -108,6 +108,25 @@ export function VehiculoForm({ defaultValues }: Props) {
           </Select>
         </div>
       </div>
+      <div className="grid gap-4 sm:grid-cols-3">
+        <div className="space-y-2">
+          <Label htmlFor="fechaVencimientoSOAT">Vencimiento SOAT</Label>
+          <Input id="fechaVencimientoSOAT" type="date" {...form.register("fechaVencimientoSOAT")} />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="fechaVencimientoTecnomecanica">Vencimiento Tecnomecánica</Label>
+          <Input id="fechaVencimientoTecnomecanica" type="date" {...form.register("fechaVencimientoTecnomecanica")} />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="fechaVencimientoPoliza">Vencimiento Póliza</Label>
+          <Input id="fechaVencimientoPoliza" type="date" {...form.register("fechaVencimientoPoliza")} />
+        </div>
+      </div>
+      <div className="space-y-2">
+        <Label htmlFor="observaciones">Observaciones</Label>
+        <textarea id="observaciones" rows={3} className="flex w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring" {...form.register("observaciones")} />
+        {form.formState.errors.observaciones && <p className="text-xs text-destructive">{form.formState.errors.observaciones.message}</p>}
+      </div>
       <FormActions />
     </form>
   );

@@ -1,16 +1,25 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import Link from "next/link";
 import { formatCurrency } from "@/lib/utils";
-import { AlertTriangle, AlertCircle, Info, TrendingDown } from "lucide-react";
+import { AlertTriangle, AlertCircle, Info, TrendingDown, Car } from "lucide-react";
 import type { Alerta } from "@/features/financiero/flujo-caja";
+import type { AlertaFlota } from "@/features/vehiculos/server/queries";
 
 interface Props {
   alertas: Alerta[];
+  alertasFlota: AlertaFlota[];
   contratosBajoMargen: number;
   carteraVencida: number;
   pagosVencidos: number;
 }
 
-export function DashboardAlertas({ alertas, contratosBajoMargen, carteraVencida, pagosVencidos }: Props) {
+const tipoLabels: Record<string, string> = {
+  SOAT: "SOAT", TECNOMECANICA: "Tecnomecánica", POLIZA: "Póliza",
+};
+
+export function DashboardAlertas({ alertas, alertasFlota, contratosBajoMargen, carteraVencida, pagosVencidos }: Props) {
+  const tieneAlertas = carteraVencida > 0 || pagosVencidos > 0 || contratosBajoMargen > 0 || alertas.length > 0 || alertasFlota.length > 0;
+
   return (
     <Card>
       <CardHeader>
@@ -47,6 +56,21 @@ export function DashboardAlertas({ alertas, contratosBajoMargen, carteraVencida,
             </div>
           </div>
         )}
+        {alertasFlota.map((a, idx) => (
+          <div key={`flota-${idx}`} className="flex items-start gap-3 rounded-lg border border-amber-300 bg-amber-50 dark:bg-amber-950/20 dark:border-amber-800 p-3">
+            <Car className="mt-0.5 h-5 w-5 shrink-0 text-amber-600" />
+            <div>
+              <p className="text-sm font-medium">
+                {tipoLabels[a.tipo]} — <Link href={`/vehiculos/${a.vehiculoId}`} className="underline">{a.placa}</Link>
+              </p>
+              <p className="text-sm text-muted-foreground">
+                {a.diasRestantes < 0
+                  ? `Vencido hace ${Math.abs(a.diasRestantes)} días`
+                  : `Vence en ${a.diasRestantes} días (${a.fechaVencimiento.toLocaleDateString("es-MX")})`}
+              </p>
+            </div>
+          </div>
+        ))}
         {alertas.map((alerta, idx) => (
           <div
             key={idx}
@@ -75,7 +99,7 @@ export function DashboardAlertas({ alertas, contratosBajoMargen, carteraVencida,
             </div>
           </div>
         ))}
-        {carteraVencida === 0 && pagosVencidos === 0 && contratosBajoMargen === 0 && alertas.length === 0 && (
+        {!tieneAlertas && (
           <p className="text-sm text-muted-foreground text-center py-4">No hay alertas activas</p>
         )}
       </CardContent>

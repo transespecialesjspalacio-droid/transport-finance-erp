@@ -2,6 +2,7 @@ import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import { getFlujoCajaProyectado } from "@/features/financiero/flujo-caja";
 import { getIndicadoresFinancieros } from "@/features/financiero/indicadores";
+import { getRentabilidadVehiculos, getAlertasFlota } from "@/features/vehiculos/server/queries";
 
 export async function getDashboardData() {
   const session = await auth();
@@ -27,6 +28,9 @@ export async function getDashboardData() {
     rentabilidadBaseAgg,
     flujoCaja,
     indicadores,
+    vehiculosAgg,
+    rentabilidadVehiculos,
+    alertasFlota,
   ] = await Promise.all([
     prisma.servicio.aggregate({
       where: { empresaId, fecha: { gte: inicioMes, lte: finMes }, estado: { not: "CANCELADO" } },
@@ -76,9 +80,22 @@ export async function getDashboardData() {
     }),
     getFlujoCajaProyectado("mes"),
     getIndicadoresFinancieros(),
+    prisma.vehiculo.findMany({
+      where: { empresaId, active: true },
+      select: { id: true, propietario: true },
+    }),
+    getRentabilidadVehiculos(empresaId),
+    getAlertasFlota(empresaId),
   ]);
 
   const ingresosServicios = Number(totalFacturadoMes._sum?.ingresoEsperado ?? 0);
+
+  const vehiculosActivos = vehiculosAgg.length;
+  const vehiculosPropios = vehiculosAgg.filter((v) => v.propietario === "PROPIO").length;
+  const vehiculosTerceros = vehiculosAgg.filter((v) => v.propietario === "TERCERO").length;
+  const utilidadTotalFlota = rentabilidadVehiculos.reduce((s, v) => s + v.utilidad, 0);
+  const vehiculoMasRentable = rentabilidadVehiculos[0] ?? null;
+  const vehiculoMenosRentable = rentabilidadVehiculos[rentabilidadVehiculos.length - 1] ?? null;
 
   const serviciosHoyArray = serviciosHoy;
   const enCurso = serviciosHoyArray.filter((s) => s.estado === "EN_CURSO").length;
@@ -172,6 +189,15 @@ export async function getDashboardData() {
     alertas: flujoCaja.alertas,
     carteraVencida: indicadores.carteraVencida,
     pagosVencidos: indicadores.pagosVencidos,
+    alertasFlota,
+    flota: {
+      vehiculosActivos,
+      vehiculosPropios,
+      vehiculosTerceros,
+      utilidadTotalFlota,
+      vehiculoMasRentable: vehiculoMasRentable ? { placa: vehiculoMasRentable.placa, marca: vehiculoMasRentable.marca, modelo: vehiculoMasRentable.modelo, utilidad: vehiculoMasRentable.utilidad } : null,
+      vehiculoMenosRentable: vehiculoMenosRentable ? { placa: vehiculoMenosRentable.placa, marca: vehiculoMenosRentable.marca, modelo: vehiculoMenosRentable.modelo, utilidad: vehiculoMenosRentable.utilidad } : null,
+    },
     contratosBajoMargen: Array.from(utilidadPorContrato.values()).filter((c) => {
       const margen = c.ingresos > 0 ? c.utilidad / c.ingresos : 0;
       return margen < 0.1 && margen > 0;

@@ -9,6 +9,10 @@ export const vehiculoSchema = z.object({
   tipoVehiculo: z.enum(["CAMION", "CAMIONETA", "TRAILER", "VOLQUETE", "GRUA", "OTRO"]),
   propietario: z.enum(["PROPIO", "TERCERO"]),
   estado: z.enum(["DISPONIBLE", "EN_SERVICIO", "EN_MANTENIMIENTO", "FUERA_DE_SERVICIO"]),
+  fechaVencimientoSOAT: z.string().nullable().optional(),
+  fechaVencimientoTecnomecanica: z.string().nullable().optional(),
+  fechaVencimientoPoliza: z.string().nullable().optional(),
+  observaciones: z.string().nullable().optional(),
 });
 
 export type VehiculoFormData = z.infer<typeof vehiculoSchema>;
