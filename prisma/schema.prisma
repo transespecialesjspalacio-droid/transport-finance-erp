@@ -149,15 +149,16 @@ model Empresa {
 }
 
 model Usuario {
-  id        String   @id @default(uuid())
-  empresaId String   @map("empresa_id")
-  name      String
-  email     String   @unique
-  password  String
-  role      Role     @default(VIEWER)
-  active    Boolean  @default(true)
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
+  id            String   @id @default(uuid())
+  empresaId     String   @map("empresa_id")
+  name          String
+  email         String   @unique
+  password      String
+  role          Role     @default(VIEWER)
+  active        Boolean  @default(true)
+  googleEnabled Boolean  @default(false) @map("google_enabled")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
 
   empresa Empresa @relation(fields: [empresaId], references: [id], onDelete: Cascade)
 
