@@ -140,12 +140,28 @@ export function ServicioForm({ defaultValues, contratos, vehiculos, conductores 
           <Input id="destino" {...form.register("destino")} />
         </div>
         <div className="space-y-2">
+          <Label htmlFor="horaSalida">Hora salida</Label>
+          <Input id="horaSalida" type="time" {...form.register("horaSalida")} />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="fechaRegreso">Fecha regreso</Label>
+          <Input id="fechaRegreso" type="date" {...form.register("fechaRegreso")} />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="horaRegreso">Hora regreso</Label>
+          <Input id="horaRegreso" type="time" {...form.register("horaRegreso")} />
+        </div>
+        <div className="space-y-2">
           <Label htmlFor="horaInicio">Hora inicio</Label>
           <Input id="horaInicio" type="time" {...form.register("horaInicio")} />
         </div>
         <div className="space-y-2">
           <Label htmlFor="horaFin">Hora fin</Label>
           <Input id="horaFin" type="time" {...form.register("horaFin")} />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="pasajeros">Pasajeros</Label>
+          <Input id="pasajeros" type="number" {...form.register("pasajeros")} />
         </div>
         <div className="space-y-2">
           <Label htmlFor="distanciaKm">Distancia estimada (km)</Label>
@@ -170,9 +186,13 @@ export function ServicioForm({ defaultValues, contratos, vehiculos, conductores 
             <Input id="ingresoReal" type="number" step="0.01" {...form.register("ingresoReal")} />
           </div>
         )}
-        <div className="space-y-2 sm:col-span-2">
+        <div className="space-y-2">
           <Label htmlFor="notas">Notas</Label>
           <Input id="notas" {...form.register("notas")} />
+        </div>
+        <div className="space-y-2 sm:col-span-2">
+          <Label htmlFor="observacionesOperativas">Observaciones operativas</Label>
+          <textarea id="observacionesOperativas" rows={3} className="flex w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring" {...form.register("observacionesOperativas")} />
         </div>
       </div>
       <FormActions />

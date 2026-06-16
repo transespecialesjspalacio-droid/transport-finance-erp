@@ -249,10 +249,15 @@ model Servicio {
   vehiculoId     String?         @map("vehiculo_id")
   conductorId    String?         @map("conductor_id")
   fecha          DateTime
+  horaSalida     DateTime?       @map("hora_salida")
+  fechaRegreso   DateTime?       @map("fecha_regreso")
+  horaRegreso    DateTime?       @map("hora_regreso")
   horaInicio     DateTime?       @map("hora_inicio")
   horaFin        DateTime?       @map("hora_fin")
   origen         String?
   destino        String?
+  pasajeros      Int?
+  observacionesOperativas String? @map("observaciones_operativas")
   distanciaKm    Decimal?        @map("distancia_km")
   kmRecorridos   Decimal?        @map("km_recorridos")
   tipoServicio   TipoServicio    @default(REGULAR) @map("tipo_servicio")

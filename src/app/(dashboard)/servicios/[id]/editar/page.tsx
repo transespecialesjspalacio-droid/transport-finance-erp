@@ -10,13 +10,19 @@ export default async function EditarServicioPage(props: { params: Promise<{ id: 
   ]);
   if (!servicio) notFound();
 
+  function fmtDate(d: Date | null | undefined) { return d ? d.toISOString().split("T")[0] : ""; }
+  function fmtTime(d: Date | null | undefined) { return d ? d.toISOString().split("T")[1].slice(0, 5) : ""; }
   const defaultValues = {
     ...servicio,
     vehiculoId: servicio.vehiculoId ?? "",
     conductorId: servicio.conductorId ?? "",
-    fecha: servicio.fecha.toISOString().split("T")[0],
-    horaInicio: servicio.horaInicio ? servicio.horaInicio.toISOString().split("T")[1].slice(0, 5) : "",
-    horaFin: servicio.horaFin ? servicio.horaFin.toISOString().split("T")[1].slice(0, 5) : "",
+    fecha: fmtDate(servicio.fecha),
+    horaSalida: fmtTime(servicio.horaSalida),
+    fechaRegreso: fmtDate(servicio.fechaRegreso),
+    horaRegreso: fmtTime(servicio.horaRegreso),
+    horaInicio: fmtTime(servicio.horaInicio),
+    horaFin: fmtTime(servicio.horaFin),
+    pasajeros: servicio.pasajeros?.toString() ?? "",
     distanciaKm: servicio.distanciaKm?.toString() ?? "",
     kmRecorridos: servicio.kmRecorridos?.toString() ?? "",
     tarifaAplicada: servicio.tarifaAplicada.toString(),

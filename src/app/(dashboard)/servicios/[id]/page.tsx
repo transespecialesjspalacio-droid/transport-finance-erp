@@ -45,6 +45,11 @@ export default async function ServicioDetailPage(props: { params: Promise<{ id: 
             <div className="flex justify-between"><span className="text-muted-foreground">Estado</span><Badge>{estadoLabels[servicio.estado]}</Badge></div>
             <div className="flex justify-between"><span className="text-muted-foreground">Origen</span><span>{servicio.origen || "-"}</span></div>
             <div className="flex justify-between"><span className="text-muted-foreground">Destino</span><span>{servicio.destino || "-"}</span></div>
+            <div className="flex justify-between"><span className="text-muted-foreground">Hora salida</span><span>{servicio.horaSalida ? formatDate(servicio.horaSalida) + " " + servicio.horaSalida.toLocaleTimeString("es-MX", { hour: "2-digit", minute: "2-digit" }) : "-"}</span></div>
+            <div className="flex justify-between"><span className="text-muted-foreground">Pasajeros</span><span>{servicio.pasajeros ?? "-"}</span></div>
+            {servicio.fechaRegreso && (
+              <div className="flex justify-between"><span className="text-muted-foreground">Regreso</span><span>{formatDate(servicio.fechaRegreso)}{servicio.horaRegreso ? " " + servicio.horaRegreso.toLocaleTimeString("es-MX", { hour: "2-digit", minute: "2-digit" }) : ""}</span></div>
+            )}
           </CardContent>
         </Card>
         <Card>
@@ -94,6 +99,12 @@ export default async function ServicioDetailPage(props: { params: Promise<{ id: 
         <Card className="mt-4">
           <CardHeader><CardTitle className="text-sm">Notas</CardTitle></CardHeader>
           <CardContent><p className="text-sm">{servicio.notas}</p></CardContent>
+        </Card>
+      )}
+      {servicio.observacionesOperativas && (
+        <Card className="mt-4">
+          <CardHeader><CardTitle className="text-sm">Observaciones operativas</CardTitle></CardHeader>
+          <CardContent><p className="text-sm whitespace-pre-wrap">{servicio.observacionesOperativas}</p></CardContent>
         </Card>
       )}
     </div>

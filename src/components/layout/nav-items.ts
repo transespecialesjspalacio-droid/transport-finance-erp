@@ -11,6 +11,7 @@ import {
   Wrench,
   BarChart3,
   Wallet,
+  Calendar,
 } from "lucide-react";
 import type { NavItem } from "@/types";
 
@@ -19,6 +20,7 @@ export const navItems: NavItem[] = [
   { title: "Clientes", href: "/clientes", icon: "Building2" },
   { title: "Contratos", href: "/contratos", icon: "FileText" },
   { title: "Servicios", href: "/servicios", icon: "Bus" },
+  { title: "Agenda", href: "/agenda", icon: "Calendar" },
   { title: "Vehículos", href: "/vehiculos", icon: "Truck" },
   { title: "Conductores", href: "/conductores", icon: "UserCog" },
   { title: "Costos", href: "/costos", icon: "Wrench" },
@@ -42,4 +44,5 @@ export const iconMap: Record<string, React.ComponentType<{ className?: string }>
   DollarSign,
   Wallet,
   TrendingUp,
+  Calendar,
 };
