@@ -2,7 +2,7 @@ import { KpiCard } from "@/components/charts/kpi-card";
 import { formatCurrency } from "@/lib/utils";
 import {
   DollarSign, TrendingDown, Receipt, CreditCard,
-  TrendingUp, Wallet, Percent, Bus, Repeat, PiggyBank, ChartNoAxesColumn,
+  TrendingUp, Wallet, Percent, Bus, Repeat, PiggyBank, ChartNoAxesColumn, Landmark,
 } from "lucide-react";
 
 interface Kpis {
@@ -14,6 +14,8 @@ interface Kpis {
   totalPorPagar: number;
   utilidadReal: number;
   utilidadProyectada: number;
+  utilidadEmpresarialReal: number;
+  utilidadEmpresarialProyectada: number;
   cajaProyectada: number;
   margenPromedio: number;
   serviciosDelMes: number;
@@ -62,6 +64,24 @@ export function KpiGrid({ kpis, serviciosHoy }: Props) {
             value={formatCurrency(kpis.utilidadProyectada)}
             icon={<TrendingUp className="h-5 w-5" />}
             trend={kpis.utilidadProyectada >= 0 ? "up" : "down"}
+          />
+        </div>
+      </div>
+
+      <div>
+        <h2 className="mb-3 text-sm font-semibold uppercase tracking-wider text-muted-foreground">Utilidad Empresarial</h2>
+        <div className="mb-6 grid gap-4 md:grid-cols-2">
+          <KpiCard
+            title="Utilidad Empresarial Real"
+            value={formatCurrency(kpis.utilidadEmpresarialReal)}
+            icon={<Landmark className="h-5 w-5" />}
+            trend={kpis.utilidadEmpresarialReal >= 0 ? "up" : "down"}
+          />
+          <KpiCard
+            title="Utilidad Empresarial Proyectada"
+            value={formatCurrency(kpis.utilidadEmpresarialProyectada)}
+            icon={<TrendingUp className="h-5 w-5" />}
+            trend={kpis.utilidadEmpresarialProyectada >= 0 ? "up" : "down"}
           />
         </div>
       </div>

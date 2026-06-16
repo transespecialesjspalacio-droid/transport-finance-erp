@@ -159,6 +159,8 @@ export async function getDashboardData() {
       totalPorPagar: Number(totalPorPagarAgg._sum?.saldoPendiente ?? 0),
       utilidadReal,
       utilidadProyectada,
+      utilidadEmpresarialReal: utilidadReal + Number(ingresosRecurrentesAgg._sum?.valorRecurrente ?? 0) + Number(rentabilidadBaseAgg._sum?.rentabilidadBase ?? 0),
+      utilidadEmpresarialProyectada: utilidadProyectada + Number(ingresosRecurrentesAgg._sum?.valorRecurrente ?? 0) + Number(rentabilidadBaseAgg._sum?.rentabilidadBase ?? 0),
       cajaProyectada: flujoCaja.indicadores.cajaNetaProyectada,
       margenPromedio,
       serviciosDelMes,

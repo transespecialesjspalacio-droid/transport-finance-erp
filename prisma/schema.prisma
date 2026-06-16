@@ -215,6 +215,7 @@ model Contrato {
   servicios     Servicio[]
   cuentasCobrar CuentaCobrar[]
   adjuntos      ContratoAdjunto[]
+  costos        CostoServicio[]
 
   @@index([empresaId, active])
   @@index([empresaId, clienteId])
@@ -285,6 +286,8 @@ model CostoServicio {
   empresaId   String        @map("empresa_id")
   tipoCostoId String        @map("tipo_costo_id")
   terceroId   String?       @map("tercero_id")
+  vehiculoId  String?       @map("vehiculo_id")
+  contratoId  String?       @map("contrato_id")
   descripcion String
   monto       Decimal
   cantidad    Decimal       @default(1)
@@ -296,10 +299,14 @@ model CostoServicio {
   empresa   Empresa    @relation(fields: [empresaId], references: [id], onDelete: Cascade)
   tipoCosto TipoCosto  @relation(fields: [tipoCostoId], references: [id])
   tercero   Tercero?   @relation(fields: [terceroId], references: [id])
+  vehiculo  Vehiculo?  @relation(fields: [vehiculoId], references: [id])
+  contrato  Contrato?  @relation(fields: [contratoId], references: [id])
 
   @@index([empresaId, servicioId])
   @@index([empresaId, terceroId])
   @@index([empresaId, fecha])
+  @@index([empresaId, vehiculoId])
+  @@index([empresaId, contratoId])
   @@map("costos_servicio")
 }
 
@@ -438,6 +445,7 @@ model Vehiculo {
 
   empresa   Empresa    @relation(fields: [empresaId], references: [id], onDelete: Cascade)
   servicios Servicio[]
+  costos    CostoServicio[]
 
   @@index([empresaId, active])
   @@map("vehiculos")

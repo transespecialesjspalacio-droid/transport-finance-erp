@@ -62,26 +62,31 @@ export async function getRentabilidadVehiculos(empresaId: string): Promise<Renta
         where: { estado: { not: "CANCELADO" } },
         include: { costos: { select: { total: true } } },
       },
+      costos: { select: { total: true } },
     },
     orderBy: { placa: "asc" },
   });
 
-  return vehiculos.map((v) => {
-    const ingresos = v.servicios.reduce((s, sv) => s + Number(sv.ingresoReal ?? sv.ingresoEsperado), 0);
-    const costos = v.servicios.reduce((s, sv) => s + sv.costos.reduce((c, co) => c + Number(co.total), 0), 0);
-    const utilidad = ingresos - costos;
-    return {
-      id: v.id,
-      placa: v.placa,
-      marca: v.marca ?? "",
-      modelo: v.modelo ?? "",
-      ingresos,
-      costos,
-      utilidad,
-      margen: ingresos > 0 ? (utilidad / ingresos) * 100 : 0,
-      servicios: v.servicios.length,
-    };
-  });
+  return vehiculos
+    .map((v) => {
+      const ingresos = v.servicios.reduce((s, sv) => s + Number(sv.ingresoReal ?? sv.ingresoEsperado), 0);
+      const costosServicios = v.servicios.reduce((s, sv) => s + sv.costos.reduce((c, co) => c + Number(co.total), 0), 0);
+      const costosDirectos = v.costos.reduce((s, c) => s + Number(c.total), 0);
+      const costos = costosServicios + costosDirectos;
+      const utilidad = ingresos - costos;
+      return {
+        id: v.id,
+        placa: v.placa,
+        marca: v.marca ?? "",
+        modelo: v.modelo ?? "",
+        ingresos,
+        costos,
+        utilidad,
+        margen: ingresos > 0 ? (utilidad / ingresos) * 100 : 0,
+        servicios: v.servicios.length,
+      };
+    })
+    .sort((a, b) => b.utilidad - a.utilidad);
 }
 
 export async function getVehiculosOptions() {

@@ -162,6 +162,64 @@ export async function getReporteComparativoRealVsProyectado(empresaId: string): 
   });
 }
 
+export interface RentabilidadContrato {
+  id: string;
+  contrato: string;
+  cliente: string;
+  tipoContrato: string;
+  ingresosRecurrentes: number;
+  ingresosServicios: number;
+  costos: number;
+  utilidad: number;
+  margen: number;
+}
+
+export async function getReporteRentabilidadContratos(empresaId: string): Promise<RentabilidadContrato[]> {
+  const contratos = await prisma.contrato.findMany({
+    where: { empresaId, active: true },
+    include: {
+      cliente: { select: { nombre: true } },
+      servicios: {
+        where: { estado: { not: "CANCELADO" } },
+        include: { costos: { select: { total: true } } },
+      },
+      costos: { select: { total: true } },
+    },
+    orderBy: { nombre: "asc" },
+  });
+
+  return contratos
+    .map((c) => {
+      const ingresosRecurrentes =
+        Number(c.valorRecurrente ?? 0) +
+        (c.tipoContrato === "MIXTO" ? Number(c.rentabilidadBase ?? 0) : 0);
+      const ingresosServicios = c.servicios.reduce(
+        (s, sv) => s + Number(sv.ingresoReal ?? sv.ingresoEsperado),
+        0,
+      );
+      const costosServicios = c.servicios.reduce(
+        (s, sv) => s + sv.costos.reduce((c2, co) => c2 + Number(co.total), 0),
+        0,
+      );
+      const costosDirectos = c.costos.reduce((s, co) => s + Number(co.total), 0);
+      const costos = costosServicios + costosDirectos;
+      const utilidad = ingresosRecurrentes + ingresosServicios - costos;
+      const totalIngresos = ingresosRecurrentes + ingresosServicios;
+      return {
+        id: c.id,
+        contrato: c.nombre,
+        cliente: c.cliente.nombre,
+        tipoContrato: c.tipoContrato,
+        ingresosRecurrentes,
+        ingresosServicios,
+        costos,
+        utilidad,
+        margen: totalIngresos > 0 ? (utilidad / totalIngresos) * 100 : 0,
+      };
+    })
+    .sort((a, b) => b.utilidad - a.utilidad);
+}
+
 export async function getReporteContratosRecurrentes(empresaId: string) {
   const contratos = await prisma.contrato.findMany({
     where: { empresaId, tipoContrato: { in: ["RECURRENTE", "MIXTO"] } },

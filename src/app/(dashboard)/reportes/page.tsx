@@ -8,7 +8,9 @@ import {
   getReporteServicios, getReporteClientes, getReporteContratos,
   getReporteCuentasCobrar, getReporteCuentasPagar, getReporteRentabilidad,
   getReporteContratosRecurrentes, getReporteComparativoRealVsProyectado,
+  getReporteRentabilidadContratos,
 } from "@/features/reportes/server/queries";
+import { getRentabilidadVehiculos } from "@/features/vehiculos/server/queries";
 
 const estadoBadge: Record<string, "default" | "success" | "warning" | "secondary" | "destructive"> = {
   PENDIENTE: "warning", PARCIAL: "default", PAGADO: "success", VENCIDO: "destructive",
@@ -38,7 +40,7 @@ export default async function ReportesPage() {
   const finMes = new Date(ahora.getFullYear(), ahora.getMonth() + 1, 0, 23, 59, 59);
   const inicioAnio = new Date(ahora.getFullYear(), 0, 1);
 
-  const [servicios, clientes, contratos, cuentasCobrar, cuentasPagar, rentabilidad, contratosRecurrentes, comparativo] = await Promise.all([
+  const [servicios, clientes, contratos, cuentasCobrar, cuentasPagar, rentabilidad, contratosRecurrentes, comparativo, topContratos, topVehiculos] = await Promise.all([
     getReporteServicios(empresaId, inicioMes, finMes),
     getReporteClientes(empresaId),
     getReporteContratos(empresaId),
@@ -47,6 +49,8 @@ export default async function ReportesPage() {
     getReporteRentabilidad(empresaId, inicioAnio, finMes),
     getReporteContratosRecurrentes(empresaId),
     getReporteComparativoRealVsProyectado(empresaId),
+    getReporteRentabilidadContratos(empresaId),
+    getRentabilidadVehiculos(empresaId),
   ]);
 
   return (
@@ -64,6 +68,8 @@ export default async function ReportesPage() {
           { id: "rentabilidad", label: "Rentabilidad" },
           { id: "rentabilidad-contractual", label: "Rent. Contractual" },
           { id: "real-vs-proyectado", label: "Real vs Proyectado" },
+          { id: "top-contratos", label: "Top Contratos" },
+          { id: "top-vehiculos", label: "Top Vehículos" },
         ].map((item) => (
           <a key={item.id} href={`#${item.id}`}
             className="rounded-md bg-muted px-3 py-1.5 text-sm font-medium hover:bg-primary hover:text-primary-foreground transition-colors">
@@ -400,6 +406,82 @@ export default async function ReportesPage() {
                   ))}
                   {contratosRecurrentes.length === 0 && (
                     <tr><td colSpan={8} className="py-8 text-center text-muted-foreground">No hay contratos recurrentes registrados</td></tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </CardContent>
+        </Card>
+      </section>
+
+      {/* Top Contratos Rentables */}
+      <section id="top-contratos" className="mb-8">
+        <Card>
+          <CardHeader><CardTitle>Top Contratos Rentables</CardTitle></CardHeader>
+          <CardContent>
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b text-left text-muted-foreground">
+                    <th className="py-2 pr-4">Contrato</th>
+                    <th className="py-2 pr-4">Cliente</th>
+                    <th className="py-2 pr-4">Ingresos</th>
+                    <th className="py-2 pr-4">Costos</th>
+                    <th className="py-2 pr-4">Utilidad</th>
+                    <th className="py-2 pr-4">Margen</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {topContratos.map((c) => (
+                    <tr key={c.id} className="border-b">
+                      <td className="py-2 pr-4 font-medium">{c.contrato}</td>
+                      <td className="py-2 pr-4">{c.cliente}</td>
+                      <td className="py-2 pr-4">{formatCurrency(c.ingresosRecurrentes + c.ingresosServicios)}</td>
+                      <td className="py-2 pr-4">{formatCurrency(c.costos)}</td>
+                      <td className={`py-2 pr-4 ${c.utilidad >= 0 ? "text-emerald-600" : "text-red-600"}`}>{formatCurrency(c.utilidad)}</td>
+                      <td className="py-2 pr-4">{c.margen.toFixed(1)}%</td>
+                    </tr>
+                  ))}
+                  {topContratos.length === 0 && (
+                    <tr><td colSpan={6} className="py-8 text-center text-muted-foreground">No hay contratos activos</td></tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </CardContent>
+        </Card>
+      </section>
+
+      {/* Top Vehículos Rentables */}
+      <section id="top-vehiculos" className="mb-8">
+        <Card>
+          <CardHeader><CardTitle>Top Vehículos Rentables</CardTitle></CardHeader>
+          <CardContent>
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b text-left text-muted-foreground">
+                    <th className="py-2 pr-4">Vehículo</th>
+                    <th className="py-2 pr-4">Placa</th>
+                    <th className="py-2 pr-4">Ingresos</th>
+                    <th className="py-2 pr-4">Costos</th>
+                    <th className="py-2 pr-4">Utilidad</th>
+                    <th className="py-2 pr-4">Margen</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {topVehiculos.map((v) => (
+                    <tr key={v.id} className="border-b">
+                      <td className="py-2 pr-4 font-medium">{v.marca} {v.modelo}</td>
+                      <td className="py-2 pr-4">{v.placa}</td>
+                      <td className="py-2 pr-4">{formatCurrency(v.ingresos)}</td>
+                      <td className="py-2 pr-4">{formatCurrency(v.costos)}</td>
+                      <td className={`py-2 pr-4 ${v.utilidad >= 0 ? "text-emerald-600" : "text-red-600"}`}>{formatCurrency(v.utilidad)}</td>
+                      <td className="py-2 pr-4">{v.margen.toFixed(1)}%</td>
+                    </tr>
+                  ))}
+                  {topVehiculos.length === 0 && (
+                    <tr><td colSpan={6} className="py-8 text-center text-muted-foreground">No hay vehículos registrados</td></tr>
                   )}
                 </tbody>
               </table>
