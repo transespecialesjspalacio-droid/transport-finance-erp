@@ -32,6 +32,6 @@ DROP TYPE IF EXISTS "TipoVehiculo";
 -- 7. Rename new type back to the expected name (so Prisma can write to it)
 ALTER TYPE "TipoVehiculoNuevo" RENAME TO "TipoVehiculo";
 
--- 7. Remove unused km columns from servicios
+-- 8. Remove unused km columns from servicios
 ALTER TABLE "servicios" DROP COLUMN IF EXISTS "distancia_km";
 ALTER TABLE "servicios" DROP COLUMN IF EXISTS "km_recorridos";

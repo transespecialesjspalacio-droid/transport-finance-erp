@@ -1,12 +1,12 @@
 import { notFound } from "next/navigation";
 import { PageHeader } from "@/components/shared/page-header";
 import { ServicioForm } from "@/features/servicios/components/servicio-form";
-import { getServicio, getContratosOptions, getVehiculosOptions, getConductoresOptions } from "@/features/servicios/server/queries";
+import { getServicio, getContratosOptions, getVehiculosOptions, getConductoresOptions, getTercerosOptions } from "@/features/servicios/server/queries";
 
 export default async function EditarServicioPage(props: { params: Promise<{ id: string }> }) {
   const { id } = await props.params;
-  const [servicio, contratos, vehiculos, conductores] = await Promise.all([
-    getServicio(id), getContratosOptions(), getVehiculosOptions(), getConductoresOptions(),
+  const [servicio, contratos, vehiculos, conductores, terceros] = await Promise.all([
+    getServicio(id), getContratosOptions(), getVehiculosOptions(), getConductoresOptions(), getTercerosOptions(),
   ]);
   if (!servicio) notFound();
 
@@ -26,12 +26,16 @@ export default async function EditarServicioPage(props: { params: Promise<{ id: 
     tarifaAplicada: servicio.tarifaAplicada.toString(),
     ingresoEsperado: servicio.ingresoEsperado.toString(),
     ingresoReal: servicio.ingresoReal?.toString() ?? "",
+    realizadoPor: servicio.realizadoPor ?? "PROPIO",
+    terceroId: servicio.terceroId ?? "",
+    valorAPagar: servicio.valorAPagar?.toString() ?? "",
+    fechaVencimientoPago: fmtDate(servicio.fechaVencimientoPago),
   };
 
   return (
     <div>
       <PageHeader title="Editar servicio" description={`Servicio del ${servicio.fecha.toLocaleDateString()}`} />
-      <ServicioForm defaultValues={defaultValues} contratos={contratos} vehiculos={vehiculos} conductores={conductores} />
+      <ServicioForm defaultValues={defaultValues} contratos={contratos} vehiculos={vehiculos} conductores={conductores} terceros={terceros} />
     </div>
   );
 }

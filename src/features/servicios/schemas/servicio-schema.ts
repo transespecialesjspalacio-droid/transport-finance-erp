@@ -21,6 +21,10 @@ export const servicioSchema = z.object({
   ingresoReal: z.string().optional().or(z.literal("")),
   estado: z.enum(["PROGRAMADO", "EN_CURSO", "COMPLETADO", "CANCELADO"]),
   notas: z.string().max(500).optional().or(z.literal("")),
+  realizadoPor: z.enum(["PROPIO", "TERCERO"]).optional(),
+  terceroId: z.string().optional().or(z.literal("")),
+  valorAPagar: z.string().optional().or(z.literal("")),
+  fechaVencimientoPago: z.string().optional().or(z.literal("")),
 });
 
 export type ServicioFormData = z.infer<typeof servicioSchema>;

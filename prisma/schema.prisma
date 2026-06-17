@@ -147,6 +147,10 @@ model Servicio {
   horaSalida              DateTime?       @map("hora_salida")
   observacionesOperativas String?         @map("observaciones_operativas")
   pasajeros               Int?
+  realizadoPor            RealizadoPor    @default(PROPIO) @map("realizado_por")
+  terceroId               String?         @map("tercero_id")
+  valorAPagar             Decimal?        @map("valor_a_pagar")
+  fechaVencimientoPago    DateTime?       @map("fecha_vencimiento_pago")
   costos                  CostoServicio[]
   cuentasCobrar           CuentaCobrar[]
   cuentasPagar            CuentaPagar[]
@@ -154,6 +158,7 @@ model Servicio {
   contrato                Contrato        @relation(fields: [contratoId], references: [id], onDelete: Cascade)
   empresa                 Empresa         @relation(fields: [empresaId], references: [id], onDelete: Cascade)
   vehiculo                Vehiculo?       @relation(fields: [vehiculoId], references: [id])
+  tercero                 Tercero?        @relation(fields: [terceroId], references: [id])
 
   @@index([empresaId, estado])
   @@index([empresaId, fecha])
@@ -161,6 +166,7 @@ model Servicio {
   @@index([empresaId, contratoId])
   @@index([empresaId, vehiculoId])
   @@index([empresaId, conductorId])
+  @@index([empresaId, terceroId])
   @@map("servicios")
 }
 
@@ -219,6 +225,7 @@ model Tercero {
   codigo       String?         @map("codigo")
   costos       CostoServicio[]
   cuentasPagar CuentaPagar[]
+  servicios    Servicio[]
   empresa      Empresa         @relation(fields: [empresaId], references: [id], onDelete: Cascade)
 
   @@index([empresaId, active])
@@ -238,6 +245,7 @@ model CuentaCobrar {
   fechaEmision     DateTime     @map("fecha_emision")
   fechaVencimiento DateTime     @map("fecha_vencimiento")
   estado           EstadoCuenta @default(PENDIENTE)
+  origen           OrigenCxc    @default(MANUAL) @map("origen")
   createdAt        DateTime     @default(now()) @map("created_at")
   cobros           Cobro[]
   cliente          Cliente      @relation(fields: [clienteId], references: [id])
@@ -276,6 +284,7 @@ model CuentaPagar {
   fechaEmision     DateTime     @map("fecha_emision")
   fechaVencimiento DateTime     @map("fecha_vencimiento")
   estado           EstadoCuenta @default(PENDIENTE)
+  origen           OrigenCxp    @default(MANUAL) @map("origen")
   createdAt        DateTime     @default(now()) @map("created_at")
   terceroId        String       @map("tercero_id")
   numero           String?      @map("numero")
@@ -400,6 +409,22 @@ enum EstadoCuenta {
   PARCIAL
   PAGADO
   VENCIDO
+  CANCELADO
+}
+
+enum RealizadoPor {
+  PROPIO
+  TERCERO
+}
+
+enum OrigenCxc {
+  MANUAL
+  SERVICIO_AUTOMATICO
+}
+
+enum OrigenCxp {
+  MANUAL
+  SERVICIO_TERCERO
 }
 
 enum MetodoPago {

@@ -52,6 +52,9 @@ export async function getServicio(id: string) {
       vehiculo: { select: { id: true, placa: true } },
       conductor: { select: { id: true, nombre: true } },
       costos: { include: { tipoCosto: true } },
+      cuentasCobrar: { select: { id: true, facturaId: true, estado: true, saldoPendiente: true } },
+      cuentasPagar: { select: { id: true, numero: true, estado: true, saldoPendiente: true } },
+      tercero: { select: { id: true, nombre: true } },
     },
   });
 }
@@ -83,6 +86,17 @@ export async function getConductoresOptions() {
   if (!session?.user?.empresaId) return [];
 
   return prisma.conductor.findMany({
+    where: { empresaId: session.user.empresaId, active: true },
+    select: { id: true, nombre: true },
+    orderBy: { nombre: "asc" },
+  });
+}
+
+export async function getTercerosOptions() {
+  const session = await auth();
+  if (!session?.user?.empresaId) return [];
+
+  return prisma.tercero.findMany({
     where: { empresaId: session.user.empresaId, active: true },
     select: { id: true, nombre: true },
     orderBy: { nombre: "asc" },

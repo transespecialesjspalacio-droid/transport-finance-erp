@@ -12,6 +12,12 @@ import { totalCostos, margenUtilidad, type ServicioWithCostos } from "@/features
 const estadoLabels: Record<string, string> = {
   PROGRAMADO: "Programado", EN_CURSO: "En curso", COMPLETADO: "Completado", CANCELADO: "Cancelado",
 };
+const estadoCxCLabels: Record<string, string> = {
+  PENDIENTE: "Pendiente", PARCIAL: "Parcial", PAGADO: "Pagado", VENCIDO: "Vencido", CANCELADO: "Cancelado",
+};
+const estadoCxPLabels: Record<string, string> = {
+  PENDIENTE: "Pendiente", PARCIAL: "Parcial", PAGADO: "Pagado", VENCIDO: "Vencido", CANCELADO: "Cancelado",
+};
 
 export default async function ServicioDetailPage(props: { params: Promise<{ id: string }> }) {
   const { id } = await props.params;
@@ -21,6 +27,9 @@ export default async function ServicioDetailPage(props: { params: Promise<{ id: 
   const svc = servicio as unknown as ServicioWithCostos;
   const totalCost = totalCostos(svc);
   const margen = margenUtilidad(svc);
+
+  const cxc = servicio.cuentasCobrar?.[0] ?? null;
+  const cxp = servicio.cuentasPagar?.[0] ?? null;
 
   return (
     <div>
@@ -40,8 +49,13 @@ export default async function ServicioDetailPage(props: { params: Promise<{ id: 
           <CardHeader><CardTitle className="text-sm">Información del servicio</CardTitle></CardHeader>
           <CardContent className="space-y-2 text-sm">
             <div className="flex justify-between"><span className="text-muted-foreground">Contrato</span><span>{servicio.contrato.nombre}</span></div>
+            <div className="flex justify-between"><span className="text-muted-foreground">Código</span><span>{servicio.codigo || "-"}</span></div>
             <div className="flex justify-between"><span className="text-muted-foreground">Tipo</span><span>{servicio.tipoServicio}</span></div>
             <div className="flex justify-between"><span className="text-muted-foreground">Estado</span><Badge>{estadoLabels[servicio.estado]}</Badge></div>
+            <div className="flex justify-between"><span className="text-muted-foreground">Realizado por</span><span>{servicio.realizadoPor === "TERCERO" ? "Tercero" : "Propio"}</span></div>
+            {servicio.realizadoPor === "TERCERO" && servicio.tercero && (
+              <div className="flex justify-between"><span className="text-muted-foreground">Proveedor</span><span>{servicio.tercero.nombre}</span></div>
+            )}
             <div className="flex justify-between"><span className="text-muted-foreground">Origen</span><span>{servicio.origen || "-"}</span></div>
             <div className="flex justify-between"><span className="text-muted-foreground">Destino</span><span>{servicio.destino || "-"}</span></div>
             <div className="flex justify-between"><span className="text-muted-foreground">Hora salida</span><span>{servicio.horaSalida ? formatDate(servicio.horaSalida) + " " + servicio.horaSalida.toLocaleTimeString("es-MX", { hour: "2-digit", minute: "2-digit" }) : "-"}</span></div>
@@ -75,6 +89,31 @@ export default async function ServicioDetailPage(props: { params: Promise<{ id: 
             </p>
           </CardContent>
         </Card>
+      </div>
+
+      <div className="grid gap-4 md:grid-cols-2 mt-4">
+        {cxc && (
+          <Card>
+            <CardHeader><CardTitle className="text-sm">Cuenta por Cobrar asociada</CardTitle></CardHeader>
+            <CardContent className="space-y-2 text-sm">
+              <div className="flex justify-between"><span className="text-muted-foreground">Factura</span><span>{cxc.facturaId || "-"}</span></div>
+              <div className="flex justify-between"><span className="text-muted-foreground">Estado</span><Badge variant={cxc.estado === "PENDIENTE" || cxc.estado === "PARCIAL" ? "default" : "secondary"}>{estadoCxCLabels[cxc.estado] || cxc.estado}</Badge></div>
+              <div className="flex justify-between"><span className="text-muted-foreground">Saldo pendiente</span><span>{formatCurrency(cxc.saldoPendiente)}</span></div>
+              <Link href={`/cuentas-cobrar/${cxc.id}`} className="text-xs text-primary underline">Ver detalle completo</Link>
+            </CardContent>
+          </Card>
+        )}
+        {cxp && (
+          <Card>
+            <CardHeader><CardTitle className="text-sm">Cuenta por Pagar asociada</CardTitle></CardHeader>
+            <CardContent className="space-y-2 text-sm">
+              <div className="flex justify-between"><span className="text-muted-foreground">Número</span><span>{cxp.numero || "-"}</span></div>
+              <div className="flex justify-between"><span className="text-muted-foreground">Estado</span><Badge variant={cxp.estado === "PENDIENTE" || cxp.estado === "PARCIAL" ? "default" : "secondary"}>{estadoCxPLabels[cxp.estado] || cxp.estado}</Badge></div>
+              <div className="flex justify-between"><span className="text-muted-foreground">Saldo pendiente</span><span>{formatCurrency(cxp.saldoPendiente)}</span></div>
+              <Link href={`/cuentas-pagar/${cxp.id}`} className="text-xs text-primary underline">Ver detalle completo</Link>
+            </CardContent>
+          </Card>
+        )}
       </div>
 
       {servicio.notas && (
