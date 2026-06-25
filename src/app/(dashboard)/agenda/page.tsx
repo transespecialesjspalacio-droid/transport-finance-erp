@@ -5,6 +5,7 @@ import { Plus } from "lucide-react";
 import { PageHeader } from "@/components/shared/page-header";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { AsignacionStatus } from "@/components/shared/asignacion-status";
 import { getAgendaServicios } from "@/features/agenda/server/queries";
 import { VistaCalendario } from "@/features/agenda/components/vista-calendario";
 
@@ -120,8 +121,7 @@ async function AgendaContent({ searchParams }: { searchParams: Record<string, st
                   <div className="flex flex-wrap gap-x-6 gap-y-1 mt-2 text-sm">
                     <span>{s.origen || "-"} → {s.destino || "-"}</span>
                     <SalidaRegreso servicio={s} />
-                    {s.vehiculo && <span className="font-medium">🚛 {s.vehiculo.placa}</span>}
-                    {s.conductor && <span>👤 {s.conductor.nombre}</span>}
+                    <AsignacionStatus vehiculo={s.vehiculo} conductor={s.conductor} />
                     {s.pasajeros != null && <span>👥 {s.pasajeros}</span>}
                   </div>
                 </CardContent>
@@ -143,6 +143,7 @@ async function AgendaContent({ searchParams }: { searchParams: Record<string, st
                 <th className="py-2 px-3 font-medium">Destino</th>
                 <th className="py-2 px-3 font-medium">Vehículo</th>
                 <th className="py-2 px-3 font-medium">Conductor</th>
+                <th className="py-2 px-3 font-medium">Asignación</th>
                 <th className="py-2 px-3 font-medium">Pasajeros</th>
                 <th className="py-2 px-3 font-medium">Estado</th>
               </tr>
@@ -172,6 +173,7 @@ async function AgendaContent({ searchParams }: { searchParams: Record<string, st
                   <td className="py-2 px-3">{s.destino || "-"}</td>
                   <td className="py-2 px-3 font-medium">{s.vehiculo?.placa || "-"}</td>
                   <td className="py-2 px-3">{s.conductor?.nombre || "-"}</td>
+                  <td className="py-2 px-3"><AsignacionStatus vehiculo={s.vehiculo} conductor={s.conductor} /></td>
                   <td className="py-2 px-3">{s.pasajeros ?? "-"}</td>
                   <td className="py-2 px-3"><Badge variant={estadoBadge[s.estado]}>{estadoLabels[s.estado]}</Badge></td>
                 </tr>
@@ -194,6 +196,7 @@ async function AgendaContent({ searchParams }: { searchParams: Record<string, st
                 <th className="py-2 px-3 font-medium">Destino</th>
                 <th className="py-2 px-3 font-medium">Vehículo</th>
                 <th className="py-2 px-3 font-medium">Conductor</th>
+                <th className="py-2 px-3 font-medium">Asignación</th>
                 <th className="py-2 px-3 font-medium">Pasajeros</th>
                 <th className="py-2 px-3 font-medium">Estado</th>
               </tr>
@@ -223,6 +226,7 @@ async function AgendaContent({ searchParams }: { searchParams: Record<string, st
                   <td className="py-2 px-3">{s.destino || "-"}</td>
                   <td className="py-2 px-3 font-medium">{s.vehiculo?.placa || "-"}</td>
                   <td className="py-2 px-3">{s.conductor?.nombre || "-"}</td>
+                  <td className="py-2 px-3"><AsignacionStatus vehiculo={s.vehiculo} conductor={s.conductor} /></td>
                   <td className="py-2 px-3">{s.pasajeros ?? "-"}</td>
                   <td className="py-2 px-3"><Badge variant={estadoBadge[s.estado]}>{estadoLabels[s.estado]}</Badge></td>
                 </tr>

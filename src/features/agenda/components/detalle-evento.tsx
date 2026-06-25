@@ -4,6 +4,7 @@ import Link from "next/link";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { AsignacionStatus } from "@/components/shared/asignacion-status";
 import { estadoCalendario } from "../utils/colors";
 
 const estadoLabels: Record<string, string> = {
@@ -70,13 +71,12 @@ export function DetalleEventoSheet({
             <p className="text-muted-foreground text-xs mb-1">Contrato</p>
             <p>{servicio.contrato?.nombre} ({servicio.contrato?.codigo})</p>
           </div>
-          <div>
-            <p className="text-muted-foreground text-xs mb-1">Vehículo</p>
-            <p className="font-medium">{servicio.vehiculo?.placa || "Sin asignar"}</p>
-          </div>
-          <div>
-            <p className="text-muted-foreground text-xs mb-1">Conductor</p>
-            <p>{servicio.conductor?.nombre || "Sin asignar"}</p>
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-muted-foreground text-xs mb-1">Vehículo</p>
+              <p className="font-medium">{servicio.vehiculo?.placa || "Sin asignar"}</p>
+            </div>
+            <AsignacionStatus vehiculo={servicio.vehiculo} conductor={servicio.conductor} />
           </div>
           <div>
             <p className="text-muted-foreground text-xs mb-1">Pasajeros</p>

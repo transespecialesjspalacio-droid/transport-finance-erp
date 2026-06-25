@@ -195,7 +195,7 @@ export function VistaCalendario({ servicios: raw }: { servicios: ServicioData[] 
                       key={`${ev.servicio.id}-${i}`}
                       onClick={() => handleEventClick(ev.servicio)}
                       className={`w-full text-left text-[11px] leading-tight px-1 py-0.5 rounded truncate border-l-2 ${ec.bg} ${ec.text} ${ec.border} hover:brightness-95 dark:hover:brightness-125 transition-all`}
-                      title={`${label} - ${ev.servicio.vehiculo?.placa || "sin vehículo"}`}
+                      title={`${label} · ${ev.servicio.vehiculo?.placa || "sin vehículo"} · ${ev.servicio.conductor?.nombre || "sin conductor"}`}
                     >
                       {ev.esInicio || eventosDia.length <= 1 ? (
                         <>{label}<br /><span className="opacity-80">{ev.servicio.horaSalida ? fmtHora(ev.servicio.horaSalida) : ""}{ev.servicio.vehiculo ? ` · ${ev.servicio.vehiculo.placa}` : ""}</span></>

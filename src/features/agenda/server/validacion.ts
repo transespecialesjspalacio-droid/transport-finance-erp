@@ -43,7 +43,6 @@ export async function getConflictosAgenda(fecha: string) {
         { fechaRegreso: { gte: inicioSemana, lte: finSemana } },
       ],
       estado: { not: "CANCELADO" },
-      vehiculoId: { not: null },
     },
     include: {
       vehiculo: { select: { placa: true } },

@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/shared/page-header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { AsignacionStatus } from "@/components/shared/asignacion-status";
 import { getServicio } from "@/features/servicios/server/queries";
 import { deleteServicio } from "@/features/servicios/server/actions";
 import { formatDate, formatCurrency } from "@/lib/utils";
@@ -68,8 +69,9 @@ export default async function ServicioDetailPage(props: { params: Promise<{ id: 
         <Card>
           <CardHeader><CardTitle className="text-sm">Recursos</CardTitle></CardHeader>
           <CardContent className="space-y-2 text-sm">
-            <div className="flex justify-between"><span className="text-muted-foreground">Vehículo</span><span>{servicio.vehiculo?.placa || "Sin asignar"}</span></div>
-            <div className="flex justify-between"><span className="text-muted-foreground">Conductor</span><span>{servicio.conductor?.nombre || "Sin asignar"}</span></div>
+            <div className="flex justify-between items-center"><span className="text-muted-foreground">Vehículo</span><span className="font-medium">{servicio.vehiculo?.placa || "Sin asignar"}</span></div>
+            <div className="flex justify-between items-center"><span className="text-muted-foreground">Conductor</span><span>{servicio.conductor?.nombre || "Sin asignar"}</span></div>
+            <div className="flex justify-between items-center pt-1 border-t"><span className="text-muted-foreground">Asignación</span><AsignacionStatus vehiculo={servicio.vehiculo} conductor={servicio.conductor} /></div>
           </CardContent>
         </Card>
         <Card>
