@@ -50,15 +50,16 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center p-4">
-      <Card className="w-full max-w-sm">
+    <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-gradient-to-br from-background via-background to-primary/5 p-4">
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,var(--color-primary)/8,transparent_70%)]" />
+      <Card className="relative w-full max-w-sm shadow-lg">
         <CardHeader className="space-y-1 text-center">
-          <div className="mx-auto mb-2 flex h-12 w-12 items-center justify-center rounded-lg bg-primary">
-            <LayoutDashboard className="h-6 w-6 text-primary-foreground" />
+          <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-primary to-accent shadow-sm">
+            <LayoutDashboard className="h-7 w-7 text-primary-foreground" />
           </div>
-          <CardTitle className="text-xl">Transporte ERP</CardTitle>
+          <CardTitle className="text-xl">Transespeciales ERP</CardTitle>
           <CardDescription>
-            Ingresa tus credenciales para acceder
+            Sistema de Gestión Financiero y Operativo
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
