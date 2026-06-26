@@ -84,7 +84,7 @@ export default async function CuentaPagarDetailPage(props: { params: Promise<{ i
                     <span>{pago.metodoPago}</span>
                     {pago.referencia && <span className="ml-2 text-muted-foreground">Ref: {pago.referencia}</span>}
                   </div>
-                  <span className="font-medium text-red-600">{formatCurrency(pago.monto)}</span>
+                  <span className="font-medium text-destructive">{formatCurrency(pago.monto)}</span>
                 </div>
               ))}
             </div>

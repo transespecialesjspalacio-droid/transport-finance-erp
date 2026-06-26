@@ -29,7 +29,7 @@ function VencimientoBadge({ fecha, label }: { fecha: Date | null | undefined; la
   return (
     <div className="flex justify-between">
       <span className="text-muted-foreground">{label}</span>
-      <span className={dias < 0 ? "text-destructive font-medium" : dias <= 30 ? "text-amber-600 font-medium" : ""}>
+      <span className={dias < 0 ? "text-destructive font-medium" : dias <= 30 ? "text-warning font-medium" : ""}>
         {formatDate(fecha)} {dias < 0 ? `(vencido hace ${Math.abs(dias)}d)` : `(${dias}d)`}
       </span>
     </div>
@@ -96,15 +96,15 @@ export default async function VehiculoDetailPage(props: { params: Promise<{ id: 
       <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <Card>
           <CardHeader><CardTitle className="text-sm">Ingresos</CardTitle></CardHeader>
-          <CardContent><p className="text-xl font-bold text-emerald-600">{formatCurrency(vehiculo.rentabilidad.ingresos)}</p></CardContent>
+          <CardContent><p className="text-xl font-bold text-success">{formatCurrency(vehiculo.rentabilidad.ingresos)}</p></CardContent>
         </Card>
         <Card>
           <CardHeader><CardTitle className="text-sm">Costos</CardTitle></CardHeader>
-          <CardContent><p className="text-xl font-bold text-red-600">{formatCurrency(vehiculo.rentabilidad.costos)}</p></CardContent>
+          <CardContent><p className="text-xl font-bold text-destructive">{formatCurrency(vehiculo.rentabilidad.costos)}</p></CardContent>
         </Card>
         <Card>
           <CardHeader><CardTitle className="text-sm">Utilidad</CardTitle></CardHeader>
-          <CardContent><p className={`text-xl font-bold ${vehiculo.rentabilidad.utilidad >= 0 ? "text-emerald-600" : "text-red-600"}`}>{formatCurrency(vehiculo.rentabilidad.utilidad)}</p></CardContent>
+          <CardContent><p className={`text-xl font-bold ${vehiculo.rentabilidad.utilidad >= 0 ? "text-success" : "text-destructive"}`}>{formatCurrency(vehiculo.rentabilidad.utilidad)}</p></CardContent>
         </Card>
         <Card>
           <CardHeader><CardTitle className="text-sm">Margen</CardTitle></CardHeader>

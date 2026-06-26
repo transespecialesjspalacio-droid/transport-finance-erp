@@ -47,8 +47,8 @@ export default async function VehiculosPage(props: { searchParams: Promise<Recor
       {alertasFlota.length > 0 && (
         <div className="mb-4 space-y-2">
           {alertasFlota.slice(0, 10).map((a, i) => (
-            <div key={i} className="flex items-start gap-3 rounded-lg border border-amber-300 bg-amber-50 dark:bg-amber-950/20 dark:border-amber-800 p-3">
-              <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-amber-600" />
+            <div key={i} className="flex items-start gap-3 rounded-lg border border-warning/50 bg-warning/10 p-3">
+              <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-warning" />
               <div className="text-sm">
                 <span className="font-medium">{tipoAlertaLabels[a.tipo]}</span> — <Link href={`/vehiculos/${a.vehiculoId}`} className="underline">{a.placa}</Link>
                 <span className="text-muted-foreground ml-1">

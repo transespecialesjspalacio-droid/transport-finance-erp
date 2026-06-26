@@ -86,7 +86,7 @@ export default async function ServicioDetailPage(props: { params: Promise<{ id: 
         <Card>
           <CardHeader><CardTitle className="text-sm">Margen de utilidad</CardTitle></CardHeader>
           <CardContent className="flex items-center justify-center h-full">
-            <p className={`text-2xl font-bold ${margen !== null && margen >= 0 ? "text-emerald-600" : "text-red-600"}`}>
+            <p className={`text-2xl font-bold ${margen !== null && margen >= 0 ? "text-success" : "text-destructive"}`}>
               {margen !== null ? `${margen.toFixed(1)}%` : "N/D"}
             </p>
           </CardContent>

@@ -286,15 +286,15 @@ export default async function ReportesPage() {
             <div className="mb-4 grid gap-4 sm:grid-cols-3">
               <div className="rounded-lg border p-4">
                 <p className="text-xs text-muted-foreground">Ingresos totales</p>
-                <p className="text-xl font-bold text-emerald-600">{formatCurrency(rentabilidad.totales.ingresos)}</p>
+                <p className="text-xl font-bold text-success">{formatCurrency(rentabilidad.totales.ingresos)}</p>
               </div>
               <div className="rounded-lg border p-4">
                 <p className="text-xs text-muted-foreground">Costos totales</p>
-                <p className="text-xl font-bold text-red-600">{formatCurrency(rentabilidad.totales.costos)}</p>
+                <p className="text-xl font-bold text-destructive">{formatCurrency(rentabilidad.totales.costos)}</p>
               </div>
               <div className="rounded-lg border p-4">
                 <p className="text-xs text-muted-foreground">Utilidad neta</p>
-                <p className={`text-xl font-bold ${rentabilidad.totales.utilidad >= 0 ? "text-emerald-600" : "text-red-600"}`}>
+                <p className={`text-xl font-bold ${rentabilidad.totales.utilidad >= 0 ? "text-success" : "text-destructive"}`}>
                   {formatCurrency(rentabilidad.totales.utilidad)}
                 </p>
               </div>
@@ -320,7 +320,7 @@ export default async function ReportesPage() {
                       <td className="py-2 pr-4">{s.contrato}</td>
                       <td className="py-2 pr-4">{formatCurrency(s.ingreso)}</td>
                       <td className="py-2 pr-4">{formatCurrency(s.costos)}</td>
-                      <td className={`py-2 pr-4 ${s.utilidad >= 0 ? "text-emerald-600" : "text-red-600"}`}>{formatCurrency(s.utilidad)}</td>
+                      <td className={`py-2 pr-4 ${s.utilidad >= 0 ? "text-success" : "text-destructive"}`}>{formatCurrency(s.utilidad)}</td>
                       <td className="py-2 pr-4">{s.margen.toFixed(1)}%</td>
                     </tr>
                   ))}
@@ -356,9 +356,9 @@ export default async function ReportesPage() {
                     <tr key={c.contratoId} className="border-b">
                       <td className="py-2 pr-4 font-medium">{c.contrato}</td>
                       <td className="py-2 pr-4">{c.cliente}</td>
-                      <td className="py-2 pr-4 text-emerald-600">{formatCurrency(c.utilidadReal)}</td>
+                      <td className="py-2 pr-4 text-success">{formatCurrency(c.utilidadReal)}</td>
                       <td className="py-2 pr-4">{formatCurrency(c.utilidadProyectada)}</td>
-                      <td className={`py-2 pr-4 ${c.diferencia >= 0 ? "text-emerald-600" : "text-red-600"}`}>{formatCurrency(c.diferencia)}</td>
+                      <td className={`py-2 pr-4 ${c.diferencia >= 0 ? "text-success" : "text-destructive"}`}>{formatCurrency(c.diferencia)}</td>
                       <td className="py-2 pr-4">{c.cumplimiento.toFixed(1)}%</td>
                     </tr>
                   ))}
@@ -438,7 +438,7 @@ export default async function ReportesPage() {
                       <td className="py-2 pr-4">{c.cliente}</td>
                       <td className="py-2 pr-4">{formatCurrency(c.ingresosRecurrentes + c.ingresosServicios)}</td>
                       <td className="py-2 pr-4">{formatCurrency(c.costos)}</td>
-                      <td className={`py-2 pr-4 ${c.utilidad >= 0 ? "text-emerald-600" : "text-red-600"}`}>{formatCurrency(c.utilidad)}</td>
+                      <td className={`py-2 pr-4 ${c.utilidad >= 0 ? "text-success" : "text-destructive"}`}>{formatCurrency(c.utilidad)}</td>
                       <td className="py-2 pr-4">{c.margen.toFixed(1)}%</td>
                     </tr>
                   ))}
@@ -476,7 +476,7 @@ export default async function ReportesPage() {
                       <td className="py-2 pr-4">{v.placa}</td>
                       <td className="py-2 pr-4">{formatCurrency(v.ingresos)}</td>
                       <td className="py-2 pr-4">{formatCurrency(v.costos)}</td>
-                      <td className={`py-2 pr-4 ${v.utilidad >= 0 ? "text-emerald-600" : "text-red-600"}`}>{formatCurrency(v.utilidad)}</td>
+                      <td className={`py-2 pr-4 ${v.utilidad >= 0 ? "text-success" : "text-destructive"}`}>{formatCurrency(v.utilidad)}</td>
                       <td className="py-2 pr-4">{v.margen.toFixed(1)}%</td>
                     </tr>
                   ))}

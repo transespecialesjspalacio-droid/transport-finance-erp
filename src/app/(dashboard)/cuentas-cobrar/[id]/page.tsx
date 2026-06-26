@@ -86,7 +86,7 @@ export default async function CuentaCobrarDetailPage(props: { params: Promise<{ 
                     <span>{cobro.metodoPago}</span>
                     {cobro.referencia && <span className="ml-2 text-muted-foreground">Ref: {cobro.referencia}</span>}
                   </div>
-                  <span className="font-medium text-emerald-600">{formatCurrency(cobro.monto)}</span>
+                  <span className="font-medium text-success">{formatCurrency(cobro.monto)}</span>
                 </div>
               ))}
             </div>
