@@ -199,6 +199,11 @@
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
+  --shadow-xs: 0 1px 2px oklch(0 0 0 / 0.025);
+  --shadow-sm: 0 1px 3px oklch(0 0 0 / 0.03), 0 1px 2px oklch(0 0 0 / 0.02);
+  --shadow-md: 0 2px 6px oklch(0 0 0 / 0.04), 0 1px 3px oklch(0 0 0 / 0.03);
+  --shadow-lg: 0 4px 12px oklch(0 0 0 / 0.05), 0 2px 4px oklch(0 0 0 / 0.03);
+  --shadow-xl: 0 8px 24px oklch(0 0 0 / 0.05), 0 4px 8px oklch(0 0 0 / 0.03);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
