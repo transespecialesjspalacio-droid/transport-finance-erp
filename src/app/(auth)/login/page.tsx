@@ -10,6 +10,20 @@ import { Card } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Loader2, Shield, Clock3, Handshake, SlidersHorizontal } from "lucide-react";
 
+function NoiseTexture() {
+  return (
+    <div
+      className="pointer-events-none fixed inset-0 opacity-[0.02]"
+      aria-hidden="true"
+      style={{
+        backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")`,
+        backgroundRepeat: "repeat",
+        backgroundSize: "200px 200px",
+      }}
+    />
+  );
+}
+
 function CurvesDecoration() {
   return (
     <div className="pointer-events-none fixed bottom-0 left-0 z-0">
@@ -78,12 +92,12 @@ function BenefitItem({
 }) {
   return (
     <div className="flex flex-col items-center gap-3 text-center px-4">
-      <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/[0.08]">
-        <Icon className="h-5 w-5 text-primary" />
+      <div className="flex h-14 w-14 items-center justify-center rounded-full bg-primary/[0.08]">
+        <Icon className="h-6 w-6 text-primary" />
       </div>
       <div>
         <p className="text-sm font-medium">{title}</p>
-        <p className="mt-1 text-xs text-muted-foreground leading-relaxed max-w-[180px]">
+        <p className="mt-0.5 text-[13px] text-muted-foreground leading-snug line-clamp-2">
           {description}
         </p>
       </div>
@@ -126,25 +140,29 @@ export default function LoginPage() {
 
   return (
     <div className="relative min-h-svh overflow-hidden bg-background">
+      <NoiseTexture />
+
       <div className="pointer-events-none fixed inset-0 bg-[radial-gradient(ellipse_at_50%_0%,var(--primary)_0%,transparent_65%)] opacity-[0.03]" />
 
       <CurvesDecoration />
 
-      <div className="relative z-10 flex min-h-svh flex-col items-center justify-center px-4 py-12">
+      <div className="relative z-10 flex min-h-svh flex-col items-center justify-center px-4 py-16">
         <div className="w-full max-w-[520px]">
-          <div className="animate-in fade-in slide-in-from-bottom-4 duration-300 fill-mode-backwards rounded-[20px] border border-border/40 bg-card/92 shadow-sm backdrop-blur-[18px]">
-            <div className="p-8">
-              <div className="mb-10 text-center">
-                <h1 className="text-[28px] font-semibold tracking-tight">
-                  Bienvenido
-                </h1>
-                <p className="mt-3 text-sm text-muted-foreground">
-                  Inicia sesión para acceder al sistema
-                </p>
-              </div>
+          <div className="text-center mb-14">
+            <p className="text-sm text-muted-foreground">Bienvenido a</p>
+            <h1 className="mt-1 text-[34px] sm:text-[40px] font-bold tracking-tight leading-tight">
+              TRANSESPECIALES
+              <span className="text-accent">FDO</span>
+            </h1>
+            <p className="mt-4 text-sm text-muted-foreground">
+              Inicia sesión para acceder al sistema.
+            </p>
+          </div>
 
-              <form onSubmit={handleSubmit} className="space-y-6">
-                <div className="space-y-2">
+          <Card className="rounded-[20px] border-border/40 bg-card/90 shadow-[0_2px_20px_-6px_rgba(0,0,0,0.06)] backdrop-blur-[18px]">
+            <div className="p-8 sm:p-10">
+              <form onSubmit={handleSubmit} className="space-y-7">
+                <div className="space-y-2.5">
                   <Label htmlFor="email">Usuario</Label>
                   <Input
                     id="email"
@@ -153,10 +171,10 @@ export default function LoginPage() {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     required
-                    className="h-[52px] rounded-[14px] border-border/60 transition-all duration-200 focus-visible:ring-2 focus-visible:ring-primary placeholder:text-muted-foreground/50"
+                    className="h-[54px] rounded-[14px] border-border/60 transition-all duration-200 focus-visible:ring-2 focus-visible:ring-primary placeholder:text-muted-foreground/50"
                   />
                 </div>
-                <div className="space-y-2">
+                <div className="space-y-2.5">
                   <Label htmlFor="password">Contraseña</Label>
                   <Input
                     id="password"
@@ -165,7 +183,7 @@ export default function LoginPage() {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     required
-                    className="h-[52px] rounded-[14px] border-border/60 transition-all duration-200 focus-visible:ring-2 focus-visible:ring-primary placeholder:text-muted-foreground/50"
+                    className="h-[54px] rounded-[14px] border-border/60 transition-all duration-200 focus-visible:ring-2 focus-visible:ring-primary placeholder:text-muted-foreground/50"
                   />
                 </div>
 
@@ -190,7 +208,7 @@ export default function LoginPage() {
 
                 <Button
                   type="submit"
-                  className="flex w-full h-[56px] items-center justify-center gap-2 rounded-[14px] bg-cta text-cta-foreground hover:bg-cta/90 text-[15px] font-medium transition-all duration-200"
+                  className="flex w-full h-[56px] items-center justify-center gap-2 rounded-[14px] bg-cta text-cta-foreground hover:bg-cta/85 text-[15px] font-semibold transition-all duration-200 active:scale-[0.99]"
                   disabled={loading}
                 >
                   {loading ? (
@@ -230,43 +248,43 @@ export default function LoginPage() {
                 )}
               </Button>
             </div>
-          </div>
+          </Card>
 
-          <div className="mt-8 text-center">
+          <div className="mt-10 text-center">
             <div className="flex items-center justify-center gap-1.5 text-xs text-muted-foreground/60">
               <Shield className="h-3 w-3" />
-              <span>Sistema seguro y protegido</span>
+              <span>Plataforma segura y protegida</span>
             </div>
             <p className="mt-2 text-[11px] text-muted-foreground/40">
-              TransespecialesFDO &copy; 2025. Todos los derechos reservados.
+              &copy; 2026 TransespecialesFDO. Todos los derechos reservados.
             </p>
           </div>
         </div>
       </div>
 
       <div className="relative z-10 pb-16">
-        <div className="mx-auto max-w-[960px] px-4">
+        <div className="mx-auto max-w-[1000px] px-4">
           <Card className="rounded-[20px] border-border/30 shadow-sm">
-            <div className="p-8">
-              <div className="hidden md:grid md:grid-cols-4 md:gap-0">
+            <div className="px-10 py-6">
+              <div className="hidden md:grid md:grid-cols-4 md:gap-0 md:items-center">
                 <BenefitItem
                   icon={Shield}
                   title="Seguridad"
                   description="Protección de la información y acceso seguro."
                 />
-                <div className="self-stretch w-px bg-border/40 my-2" />
+                <div className="h-12 w-px bg-border/30" />
                 <BenefitItem
                   icon={Clock3}
                   title="Puntualidad"
                   description="Planeación y seguimiento de cada servicio."
                 />
-                <div className="self-stretch w-px bg-border/40 my-2" />
+                <div className="h-12 w-px bg-border/30" />
                 <BenefitItem
                   icon={Handshake}
                   title="Confianza"
                   description="Operación diseñada para empresas de transporte."
                 />
-                <div className="self-stretch w-px bg-border/40 my-2" />
+                <div className="h-12 w-px bg-border/30" />
                 <BenefitItem
                   icon={SlidersHorizontal}
                   title="Gestión Inteligente"
