@@ -8,7 +8,15 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { Loader2, Shield, Clock3, Handshake, SlidersHorizontal } from "lucide-react";
+import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
+import {
+  Loader2,
+  Shield,
+  Clock3,
+  Handshake,
+  SlidersHorizontal,
+  CircleAlert,
+} from "lucide-react";
 
 function NoiseTexture() {
   return (
@@ -91,8 +99,8 @@ function BenefitItem({
   description: string;
 }) {
   return (
-    <div className="flex flex-col items-center gap-3 text-center px-4">
-      <div className="flex h-14 w-14 items-center justify-center rounded-full bg-primary/[0.08]">
+    <div className="group flex flex-col items-center gap-3 text-center px-4">
+      <div className="flex h-14 w-14 items-center justify-center rounded-full bg-primary/[0.08] transition-transform duration-200 group-hover:scale-110">
         <Icon className="h-6 w-6 text-primary" />
       </div>
       <div>
@@ -149,12 +157,12 @@ export default function LoginPage() {
       <div className="relative z-10 flex min-h-svh flex-col items-center justify-center px-4 py-16">
         <div className="w-full max-w-[520px]">
           <div className="text-center mb-14">
-            <p className="text-sm text-muted-foreground">Bienvenido a</p>
+            <p className="text-base text-muted-foreground">Bienvenido a</p>
             <h1 className="mt-1 text-[34px] sm:text-[40px] font-bold tracking-tight leading-tight">
-              TRANSESPECIALES
+              <span className="text-primary">Transespeciales</span>
               <span className="text-accent">FDO</span>
             </h1>
-            <p className="mt-4 text-sm text-muted-foreground">
+            <p className="mt-4 text-base text-muted-foreground">
               Inicia sesión para acceder al sistema.
             </p>
           </div>
@@ -167,10 +175,13 @@ export default function LoginPage() {
                   <Input
                     id="email"
                     type="email"
+                    autoFocus
+                    autoComplete="username"
                     placeholder="correo@ejemplo.com"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     required
+                    disabled={loading}
                     className="h-[54px] rounded-[14px] border-border/60 transition-all duration-200 focus-visible:ring-2 focus-visible:ring-primary placeholder:text-muted-foreground/50"
                   />
                 </div>
@@ -179,10 +190,12 @@ export default function LoginPage() {
                   <Input
                     id="password"
                     type="password"
+                    autoComplete="current-password"
                     placeholder="••••••••"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     required
+                    disabled={loading}
                     className="h-[54px] rounded-[14px] border-border/60 transition-all duration-200 focus-visible:ring-2 focus-visible:ring-primary placeholder:text-muted-foreground/50"
                   />
                 </div>
@@ -204,7 +217,15 @@ export default function LoginPage() {
                   </button>
                 </div>
 
-                {error && <p className="text-sm text-destructive">{error}</p>}
+                {error && (
+                  <Alert variant="destructive">
+                    <CircleAlert className="h-4 w-4" />
+                    <AlertTitle>No fue posible iniciar sesión</AlertTitle>
+                    <AlertDescription>
+                      Verifica tu correo y contraseña e inténtalo nuevamente.
+                    </AlertDescription>
+                  </Alert>
+                )}
 
                 <Button
                   type="submit"
@@ -233,7 +254,7 @@ export default function LoginPage() {
                 variant="outline"
                 className="w-full h-[56px] rounded-[14px] border-border/60 transition-all duration-200 hover:bg-accent/5"
                 onClick={handleGoogleSignIn}
-                disabled={googleLoading}
+                disabled={loading || googleLoading}
               >
                 {googleLoading ? (
                   <>
