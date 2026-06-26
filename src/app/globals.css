@@ -85,6 +85,7 @@
    TEMA TRANSESPECIALES — Nueva identidad corporativa
    ============================================================ */
 [data-theme="transespeciales"] {
+  --sidebar-gradient: linear-gradient(180deg, oklch(0.32 0.07 155), oklch(0.27 0.06 155));
   --background: oklch(0.99 0.003 150);
   --foreground: oklch(0.15 0.02 155);
   --card: oklch(1 0 0);
@@ -124,6 +125,7 @@
    TEMA DARK — Versión oscura del branding Transespeciales
    ============================================================ */
 [data-theme="dark"] {
+  --sidebar-gradient: linear-gradient(180deg, oklch(0.12 0.015 155), oklch(0.08 0.01 155));
   --background: oklch(0.12 0.015 155);
   --foreground: oklch(0.92 0.01 155);
   --card: oklch(0.16 0.02 155);

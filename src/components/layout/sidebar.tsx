@@ -84,6 +84,7 @@ export function Sidebar() {
     <>
       {/* Desktop sidebar — fixed, inside layout */}
       <aside
+        style={{ backgroundImage: "var(--sidebar-gradient, none)" }}
         className={cn(
           "fixed left-0 top-0 z-40 hidden h-screen flex-col border-r bg-sidebar transition-all duration-300 md:flex",
           collapsed ? "w-16" : "w-64"
