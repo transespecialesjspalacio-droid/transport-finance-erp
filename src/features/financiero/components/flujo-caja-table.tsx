@@ -44,8 +44,8 @@ export function FlujoCajaTable({ entries }: Props) {
                     <span
                       className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${
                         entry.tipo === "ENTRADA"
-                          ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900 dark:text-emerald-100"
-                          : "bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-100"
+                          ? "bg-success text-success-foreground"
+                          : "bg-destructive text-destructive-foreground"
                       }`}
                     >
                       {entry.tipo === "ENTRADA" ? "Entrada" : "Salida"}
@@ -53,7 +53,7 @@ export function FlujoCajaTable({ entries }: Props) {
                   </td>
                   <td
                     className={`px-4 py-3 text-right font-medium whitespace-nowrap ${
-                      entry.tipo === "ENTRADA" ? "text-emerald-600" : "text-red-600"
+                      entry.tipo === "ENTRADA" ? "text-success" : "text-destructive"
                     }`}
                   >
                     {entry.tipo === "ENTRADA" ? "+" : "-"}

@@ -159,7 +159,7 @@ export function VistaCalendario({ servicios: raw }: { servicios: ServicioData[] 
           const fechaStr = toDateStr(dia.date);
           const festivo = eventos.festivos.get(fechaStr);
           const hoyClass = esHoy(dia.date) ? "ring-2 ring-inset ring-primary" : "";
-          const domingoClass = esDomingo(dia.date) ? "bg-red-50 dark:bg-red-950/10" : "";
+          const domingoClass = esDomingo(dia.date) ? "bg-destructive/5" : "";
           const fueraMes = !dia.esMesActual ? "opacity-40" : "";
 
           const eventosDia = eventos.eventos.filter(
@@ -174,13 +174,13 @@ export function VistaCalendario({ servicios: raw }: { servicios: ServicioData[] 
               className={`min-h-[90px] border-r border-b p-1 relative ${idx % 7 === 6 ? "border-r-0" : ""} ${hoyClass} ${domingoClass} ${fueraMes}`}
             >
               <div className="flex items-start justify-between mb-0.5">
-                <span className={`text-xs font-medium ${festivo ? "text-red-600" : domingoClass ? "text-red-500" : ""}`}>
+                <span className={`text-xs font-medium ${festivo ? "text-destructive" : domingoClass ? "text-destructive/70" : ""}`}>
                   {dia.date.getDate()}
                 </span>
               </div>
 
               {festivo && (
-                <div className="text-[10px] text-red-600 dark:text-red-400 leading-tight mb-0.5 truncate" title={festivo.nombre}>
+                <div className="text-[10px] text-destructive leading-tight mb-0.5 truncate" title={festivo.nombre}>
                   🇨🇴 {festivo.nombre}
                 </div>
               )}

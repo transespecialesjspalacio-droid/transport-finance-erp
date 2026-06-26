@@ -12,15 +12,15 @@ const iconMap = {
 };
 
 const borderMap = {
-  critical: "border-red-300 bg-red-50 dark:bg-red-950/20 dark:border-red-800",
-  warning: "border-amber-300 bg-amber-50 dark:bg-amber-950/20 dark:border-amber-800",
-  info: "border-blue-300 bg-blue-50 dark:bg-blue-950/20 dark:border-blue-800",
+  critical: "border-destructive/50 bg-destructive/10",
+  warning: "border-warning/50 bg-warning/10",
+  info: "border-primary/20 bg-primary/5",
 };
 
 const iconColorMap = {
-  critical: "text-red-600",
-  warning: "text-amber-600",
-  info: "text-blue-600",
+  critical: "text-destructive",
+  warning: "text-warning",
+  info: "text-primary",
 };
 
 export function FlujoCajaAlertas({ alertas }: Props) {
