@@ -34,7 +34,7 @@ export function KpiCard({
                   <span
                     className={cn(
                       "inline-flex items-center text-xs font-medium",
-                      trend === "up" ? "text-emerald-600" : "text-red-600"
+                      trend === "up" ? "text-success" : "text-destructive"
                     )}
                   >
                     {trend === "up" ? (

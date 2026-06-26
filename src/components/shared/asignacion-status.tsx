@@ -6,10 +6,10 @@ interface AsignacionStatusProps {
 }
 
 const statusConfig = {
-  COMPLETO: { label: "Completo", variant: "success" as const, dot: "bg-emerald-500" },
-  CONDUCTOR_PENDIENTE: { label: "Conductor pendiente", variant: "warning" as const, dot: "bg-amber-500" },
-  VEHICULO_PENDIENTE: { label: "Vehículo pendiente", variant: "warning" as const, dot: "bg-amber-500" },
-  SIN_ASIGNAR: { label: "Sin asignar", variant: "destructive" as const, dot: "bg-red-500" },
+  COMPLETO: { label: "Completo", variant: "success" as const, dot: "bg-success" },
+  CONDUCTOR_PENDIENTE: { label: "Conductor pendiente", variant: "warning" as const, dot: "bg-warning" },
+  VEHICULO_PENDIENTE: { label: "Vehículo pendiente", variant: "warning" as const, dot: "bg-warning" },
+  SIN_ASIGNAR: { label: "Sin asignar", variant: "destructive" as const, dot: "bg-destructive" },
 };
 
 export function AsignacionStatus({ vehiculo, conductor }: AsignacionStatusProps) {
