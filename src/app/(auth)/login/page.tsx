@@ -1,39 +1,46 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
-import { LayoutDashboard, Shield, Zap, Users, MapPin } from "lucide-react";
+import { Logo } from "@/components/ui/logo";
+import { Loader2, Shield, Clock, Handshake, Kanban } from "lucide-react";
 
 function BusIllustration() {
   return (
-    <svg viewBox="0 0 600 350" fill="none" preserveAspectRatio="xMinYMax meet" className="w-full h-auto text-primary-foreground">
-      <rect x="50" y="110" width="420" height="130" rx="24" className="fill-current opacity-30" />
-      <path d="M50,160 L50,130 C50,108 72,95 105,95 L415,95 C448,95 470,108 470,130 L470,160 Z" className="fill-current opacity-20" />
-      <rect x="400" y="108" width="55" height="55" rx="8" className="fill-current opacity-40" />
-      <rect x="82" y="112" width="62" height="44" rx="6" className="fill-current opacity-50" />
-      <rect x="155" y="112" width="62" height="44" rx="6" className="fill-current opacity-50" />
-      <rect x="228" y="112" width="62" height="44" rx="6" className="fill-current opacity-50" />
-      <rect x="301" y="112" width="62" height="44" rx="6" className="fill-current opacity-50" />
-      <rect x="50" y="212" width="420" height="28" rx="6" className="fill-current opacity-50" />
-      <rect x="450" y="190" width="18" height="14" rx="4" className="fill-accent/40" />
-      <circle cx="150" cy="250" r="28" className="fill-current opacity-20" />
-      <circle cx="150" cy="250" r="14" className="fill-current opacity-40" />
-      <circle cx="370" cy="250" r="28" className="fill-current opacity-20" />
-      <circle cx="370" cy="250" r="14" className="fill-current opacity-40" />
+    <svg viewBox="0 0 700 400" fill="none" preserveAspectRatio="xMinYMax meet" className="w-full h-auto text-primary-foreground">
+      <path d="M60,140 L60,110 C60,88 82,75 115,75 L500,75 C530,75 555,88 570,105 L600,140 Z" className="fill-current" opacity="0.15" />
+      <rect x="55" y="125" width="550" height="150" rx="28" className="fill-current" opacity="0.25" />
+      <rect x="55" y="240" width="550" height="35" rx="8" className="fill-current" opacity="0.4" />
+      <path d="M520,88 L590,88 C598,88 600,95 600,100 L600,135 L520,135 Z" className="fill-current" opacity="0.35" />
+      <rect x="530" y="100" width="55" height="28" rx="6" className="fill-current" opacity="0.2" />
+      <rect x="90" y="98" width="70" height="50" rx="8" className="fill-current" opacity="0.45" />
+      <rect x="172" y="98" width="70" height="50" rx="8" className="fill-current" opacity="0.45" />
+      <rect x="254" y="98" width="70" height="50" rx="8" className="fill-current" opacity="0.45" />
+      <rect x="336" y="98" width="70" height="50" rx="8" className="fill-current" opacity="0.45" />
+      <rect x="418" y="98" width="70" height="50" rx="8" className="fill-current" opacity="0.45" />
+      <rect x="578" y="210" width="22" height="16" rx="5" className="fill-accent/40" />
+      <rect x="578" y="235" width="22" height="12" rx="4" className="fill-current" opacity="0.2" />
+      <circle cx="175" cy="286" r="34" className="fill-current" opacity="0.15" />
+      <circle cx="175" cy="286" r="16" className="fill-current" opacity="0.3" />
+      <circle cx="175" cy="286" r="6" className="fill-current" opacity="0.4" />
+      <circle cx="485" cy="286" r="34" className="fill-current" opacity="0.15" />
+      <circle cx="485" cy="286" r="16" className="fill-current" opacity="0.3" />
+      <circle cx="485" cy="286" r="6" className="fill-current" opacity="0.4" />
     </svg>
   );
 }
 
 function RoadCurves() {
   return (
-    <svg viewBox="0 0 600 200" preserveAspectRatio="xMaxYMax meet" className="w-full h-full text-accent">
-      <path d="M0,160 C120,110 220,190 340,90 C400,40 460,110 600,50" stroke="currentColor" strokeWidth="4" fill="none" opacity="0.35" strokeLinecap="round" />
-      <path d="M0,190 C140,135 250,215 370,115 C430,65 490,145 600,80" stroke="currentColor" strokeWidth="2" fill="none" opacity="0.2" strokeLinecap="round" />
+    <svg viewBox="0 0 700 260" preserveAspectRatio="xMaxYMax meet" className="w-full h-full">
+      <path d="M0,200 C150,140 280,220 420,120 C490,70 560,145 700,85" className="stroke-accent" strokeWidth="4" fill="none" opacity="0.4" strokeLinecap="round" />
+      <path d="M0,230 C170,165 310,245 450,145 C520,95 590,175 700,115" className="stroke-accent" strokeWidth="2.5" fill="none" opacity="0.25" strokeLinecap="round" />
+      <path d="M0,260 C190,190 340,270 480,170 C550,120 620,205 700,145" className="stroke-accent" strokeWidth="1.5" fill="none" opacity="0.15" strokeLinecap="round" />
     </svg>
   );
 }
@@ -55,9 +62,9 @@ function BenefitItem({ icon: Icon, title, description }: { icon: React.ElementTy
       <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/[0.06]">
         <Icon className="h-4 w-4 text-primary" />
       </div>
-      <div>
+      <div className="min-w-0">
         <p className="text-sm font-medium">{title}</p>
-        <p className="text-xs text-muted-foreground">{description}</p>
+        <p className="text-xs text-muted-foreground leading-snug">{description}</p>
       </div>
     </div>
   );
@@ -70,6 +77,7 @@ export default function LoginPage() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
+  const [showSplash, setShowSplash] = useState(false);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -86,43 +94,58 @@ export default function LoginPage() {
       setError("Credenciales inválidas");
       setLoading(false);
     } else {
-      router.push("/dashboard");
+      setShowSplash(true);
+      setTimeout(() => router.push("/dashboard"), 1000);
     }
   }
 
-  async function handleGoogleSignIn() {
+  const handleGoogleSignIn = useCallback(async () => {
     setGoogleLoading(true);
     setError("");
     await signIn("google", { callbackUrl: "/dashboard" });
+  }, []);
+
+  if (showSplash) {
+    return (
+      <div className="flex min-h-svh flex-col items-center justify-center bg-background">
+        <div className="animate-in fade-in duration-700 fill-mode-backwards flex flex-col items-center gap-4">
+          <Logo className="h-20 w-20" />
+          <div className="text-center">
+            <h1 className="text-xl font-semibold tracking-tight">Transespeciales ERP</h1>
+            <p className="mt-2 text-sm text-muted-foreground animate-pulse">
+              Preparando tu espacio de trabajo...
+            </p>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   return (
     <div className="flex min-h-svh">
       {/* ===== LEFT PANEL (60%, hidden on mobile) ===== */}
-      <div className="relative hidden w-[60%] lg:flex flex-col overflow-hidden bg-primary">
+      <div className="relative hidden w-[60%] flex-col overflow-hidden bg-primary lg:flex">
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_center,color-mix(in_oklch,var(--primary-foreground)_6%,transparent),transparent_70%)]" />
 
-        <div className="relative z-30 flex flex-col items-center justify-center flex-1 px-16">
-          <div className="flex flex-col items-center gap-6">
-            <div className="flex h-20 w-20 items-center justify-center rounded-2xl bg-accent/90 shadow-sm">
-              <LayoutDashboard className="h-10 w-10 text-accent-foreground" />
-            </div>
+        <div className="relative z-30 flex flex-1 flex-col items-center justify-center px-16">
+          <div className="flex flex-col items-center gap-5">
+            <Logo className="h-24 w-24 animate-in fade-in duration-450 fill-mode-backwards" />
             <div className="text-center">
-              <h1 className="text-3xl font-bold tracking-tight text-primary-foreground">
+              <h1 className="animate-in fade-in slide-in-from-bottom-2 duration-450 delay-150 fill-mode-backwards text-3xl font-bold tracking-tight text-primary-foreground">
                 TRANS ESPECIALES FDO
               </h1>
-              <p className="mt-3 text-sm uppercase tracking-[0.15em] text-primary-foreground/60">
+              <p className="animate-in fade-in slide-in-from-bottom-2 duration-450 delay-300 fill-mode-backwards mt-3 text-sm uppercase tracking-[0.15em] text-primary-foreground/60">
                 Transporte Confiable, Siempre.
               </p>
             </div>
           </div>
         </div>
 
-        <div className="absolute bottom-0 right-0 z-20 h-48 w-full overflow-hidden pointer-events-none">
+        <div className="pointer-events-none absolute bottom-0 right-0 z-20 h-52 w-full overflow-hidden">
           <RoadCurves />
         </div>
 
-        <div className="absolute bottom-0 left-0 right-0 z-10 h-[55%] overflow-hidden pointer-events-none">
+        <div className="pointer-events-none absolute bottom-0 left-0 right-0 z-10 h-[55%] overflow-hidden">
           <div className="absolute inset-0 bg-gradient-to-t from-primary/70 via-primary/20 to-transparent" />
           <div className="absolute bottom-0 left-0 w-[65%] opacity-20 blur-[1.5px]">
             <BusIllustration />
@@ -132,21 +155,19 @@ export default function LoginPage() {
 
       {/* ===== RIGHT PANEL (40%) ===== */}
       <div className="relative flex flex-1 flex-col items-center justify-center overflow-hidden bg-gradient-to-br from-background via-background to-primary/[0.03] p-4 lg:p-8">
-        <div className="absolute right-0 top-0 h-96 w-96 translate-x-1/2 -translate-y-1/2 rounded-full bg-primary/[0.02] blur-3xl" />
-        <div className="absolute bottom-0 left-0 h-64 w-64 -translate-x-1/3 translate-y-1/3 rounded-full bg-accent/[0.02] blur-3xl" />
+        <div className="pointer-events-none absolute right-0 top-0 h-96 w-96 translate-x-1/2 -translate-y-1/2 rounded-full bg-primary/[0.02] blur-3xl" />
+        <div className="pointer-events-none absolute bottom-0 left-0 h-64 w-64 -translate-x-1/3 translate-y-1/3 rounded-full bg-accent/[0.02] blur-3xl" />
 
         {/* Mobile branding */}
         <div className="mb-8 flex flex-col items-center lg:hidden">
-          <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-primary shadow-sm">
-            <LayoutDashboard className="h-7 w-7 text-primary-foreground" />
-          </div>
+          <Logo className="h-14 w-14" />
           <h1 className="mt-3 text-lg font-bold">Transespeciales ERP</h1>
           <p className="mt-1 text-xs text-muted-foreground">Transporte Confiable, Siempre.</p>
         </div>
 
-        {/* Glass card */}
-        <div className="w-full max-w-sm animate-in fade-in slide-in-from-bottom-8 duration-700 fill-mode-backwards">
-          <div className="rounded-2xl border border-border/40 bg-card/70 shadow-sm backdrop-blur-xl">
+        {/* Glass card — animated entrance */}
+        <div className="animate-in fade-in slide-in-from-bottom-4 duration-450 delay-450 fill-mode-backwards w-full max-w-sm">
+          <div className="rounded-2xl border border-border/30 bg-card/70 shadow-sm backdrop-blur-xl">
             <div className="p-8">
               <div className="mb-8 text-center">
                 <h2 className="text-2xl font-semibold">Bienvenido</h2>
@@ -195,10 +216,17 @@ export default function LoginPage() {
 
                 <Button
                   type="submit"
-                  className="w-full h-12 bg-cta text-cta-foreground hover:bg-cta/90 text-base font-medium transition-all duration-200 active:scale-[0.98]"
+                  className="flex w-full h-12 items-center justify-center gap-2 bg-cta text-cta-foreground hover:bg-cta/90 text-base font-medium transition-all duration-200 active:scale-[0.98]"
                   disabled={loading}
                 >
-                  {loading ? "Ingresando..." : "Ingresar"}
+                  {loading ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      Ingresando...
+                    </>
+                  ) : (
+                    "Ingresar"
+                  )}
                 </Button>
               </form>
 
@@ -215,32 +243,46 @@ export default function LoginPage() {
                 onClick={handleGoogleSignIn}
                 disabled={googleLoading}
               >
-                <GoogleIcon className="mr-2 h-5 w-5" />
-                {googleLoading ? "Conectando..." : "Ingresar con Google"}
+                {googleLoading ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Conectando...
+                  </>
+                ) : (
+                  <>
+                    <GoogleIcon className="mr-2 h-5 w-5" />
+                    Ingresar con Google
+                  </>
+                )}
               </Button>
             </div>
           </div>
         </div>
 
         {/* Benefits desktop */}
-        <div className="mt-8 hidden w-full max-w-sm animate-in fade-in duration-700 delay-300 fill-mode-backwards lg:block">
+        <div className="mt-8 hidden w-full max-w-sm animate-in fade-in duration-450 delay-[600ms] fill-mode-backwards lg:block">
           <div className="grid grid-cols-2 gap-x-6 gap-y-4">
-            <BenefitItem icon={Shield} title="Seguro" description="Tu información está protegida" />
-            <BenefitItem icon={Zap} title="Confiable" description="Sistema para operación diaria" />
-            <BenefitItem icon={Users} title="Eficiente" description="Herramientas que optimizan la gestión" />
-            <BenefitItem icon={MapPin} title="Siempre contigo" description="Disponible desde cualquier lugar" />
+            <BenefitItem icon={Shield} title="Seguridad" description="Protección de la información y acceso seguro" />
+            <BenefitItem icon={Clock} title="Puntualidad" description="Planeación y seguimiento de cada servicio" />
+            <BenefitItem icon={Handshake} title="Confianza" description="Operación diseñada para empresas de transporte" />
+            <BenefitItem icon={Kanban} title="Gestión Inteligente" description="Toda la operación desde un único lugar" />
           </div>
         </div>
 
         {/* Benefits mobile */}
         <div className="mt-6 w-full max-w-sm lg:hidden">
           <div className="grid grid-cols-2 gap-x-4 gap-y-3">
-            <BenefitItem icon={Shield} title="Seguro" description="Protegido" />
-            <BenefitItem icon={Zap} title="Confiable" description="24/7" />
-            <BenefitItem icon={Users} title="Eficiente" description="Optimizado" />
-            <BenefitItem icon={MapPin} title="Disponible" description="Siempre" />
+            <BenefitItem icon={Shield} title="Seguridad" description="Información protegida" />
+            <BenefitItem icon={Clock} title="Puntualidad" description="Seguimiento diario" />
+            <BenefitItem icon={Handshake} title="Confianza" description="Para empresas de transporte" />
+            <BenefitItem icon={Kanban} title="Gestión Inteligente" description="Todo desde un lugar" />
           </div>
         </div>
+
+        {/* Version info */}
+        <p className="mt-6 text-[11px] text-muted-foreground/50">
+          Transespeciales ERP v1.0.0
+        </p>
       </div>
     </div>
   );

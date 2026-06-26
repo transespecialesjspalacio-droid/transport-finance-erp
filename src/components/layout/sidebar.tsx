@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
+import { Logo } from "@/components/ui/logo";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
@@ -13,7 +14,6 @@ import { useSidebar } from "./sidebar-context";
 import {
   ChevronLeft,
   ChevronRight,
-  LayoutDashboard,
 } from "lucide-react";
 
 export function Sidebar() {
@@ -51,14 +51,12 @@ export function Sidebar() {
 
   const sidebarContent = (
     <>
-      <div className="flex h-14 items-center gap-2 border-b px-4">
-        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
-          <LayoutDashboard className="h-4 w-4 text-primary-foreground" />
+        <div className="flex h-14 items-center gap-2 border-b px-4">
+          <Logo className="h-8 w-8" />
+          <span className="text-sm font-semibold">Transporte ERP</span>
         </div>
-        <span className="text-sm font-semibold">Transporte ERP</span>
-      </div>
 
-      <ScrollArea className="flex-1 px-2 py-4">
+        <ScrollArea className="flex-1 px-2 py-4">
         <nav className="flex flex-col gap-1">{navLinks}</nav>
       </ScrollArea>
 
@@ -92,9 +90,7 @@ export function Sidebar() {
       >
         {/* desktop content: hide title when collapsed */}
         <div className="flex h-14 items-center gap-2 border-b px-4">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
-            <LayoutDashboard className="h-4 w-4 text-primary-foreground" />
-          </div>
+          <Logo className="h-8 w-8 shrink-0" />
           {!collapsed && (
             <span className="text-sm font-semibold">Transporte ERP</span>
           )}
