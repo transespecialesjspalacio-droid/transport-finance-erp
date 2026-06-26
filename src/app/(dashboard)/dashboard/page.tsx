@@ -10,7 +10,7 @@ function PorcentajeCambio({ valor }: { valor: number | null }) {
   if (valor === null) return null;
   const positivo = valor >= 0;
   return (
-    <span className={`inline-flex items-center gap-1 text-sm font-medium ${positivo ? "text-emerald-600" : "text-red-600"}`}>
+    <span className={`inline-flex items-center gap-1 text-sm font-medium ${positivo ? "text-success" : "text-destructive"}`}>
       {positivo ? <TrendingUp className="h-4 w-4" /> : <TrendingDown className="h-4 w-4" />}
       {positivo ? "+" : ""}{valor.toFixed(1)}%
     </span>
@@ -46,10 +46,10 @@ export default async function DashboardPage() {
         </div>
         <div className="grid gap-4 grid-cols-2 md:grid-cols-5">
           <KpiCard title="Servicios hoy" value={String(bloque1.total)} icon={<Calendar className="h-5 w-5" />} />
-          <KpiCard title="Pendientes" value={String(bloque1.programados)} icon={<Calendar className="h-5 w-5" />} className="border-amber-200" />
-          <KpiCard title="En curso" value={String(bloque1.enCurso)} icon={<TrendingUp className="h-5 w-5" />} className="border-blue-200" />
-          <KpiCard title="Completados" value={String(bloque1.completados)} icon={<TrendingUp className="h-5 w-5" />} className="border-emerald-200" />
-          <KpiCard title="Cancelados" value={String(bloque1.cancelados)} icon={<TrendingDown className="h-5 w-5" />} className="border-red-200" />
+          <KpiCard title="Pendientes" value={String(bloque1.programados)} icon={<Calendar className="h-5 w-5" />} className="border-warning/40" />
+          <KpiCard title="En curso" value={String(bloque1.enCurso)} icon={<TrendingUp className="h-5 w-5" />} className="border-primary/20" />
+          <KpiCard title="Completados" value={String(bloque1.completados)} icon={<TrendingUp className="h-5 w-5" />} className="border-success/40" />
+          <KpiCard title="Cancelados" value={String(bloque1.cancelados)} icon={<TrendingDown className="h-5 w-5" />} className="border-destructive/40" />
         </div>
       </section>
 
@@ -138,8 +138,8 @@ export default async function DashboardPage() {
           <Card>
             <CardContent className="p-6">
               <div className="flex items-center gap-3">
-                <div className="rounded-lg bg-amber-100 dark:bg-amber-900/30 p-2">
-                  <Car className="h-5 w-5 text-amber-600" />
+                <div className="rounded-lg bg-warning/10 p-2">
+                  <Car className="h-5 w-5 text-warning" />
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Servicios sin vehículo</p>
@@ -151,8 +151,8 @@ export default async function DashboardPage() {
           <Card>
             <CardContent className="p-6">
               <div className="flex items-center gap-3">
-                <div className="rounded-lg bg-amber-100 dark:bg-amber-900/30 p-2">
-                  <Users className="h-5 w-5 text-amber-600" />
+                <div className="rounded-lg bg-warning/10 p-2">
+                  <Users className="h-5 w-5 text-warning" />
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Servicios sin conductor</p>
@@ -162,11 +162,11 @@ export default async function DashboardPage() {
             </CardContent>
           </Card>
           {bloque4.carteraVencida > 0 && (
-            <Card className="border-red-200">
+            <Card className="border-destructive/40">
               <CardContent className="p-6">
                 <div className="flex items-center gap-3">
-                  <div className="rounded-lg bg-red-100 dark:bg-red-900/30 p-2">
-                    <AlertTriangle className="h-5 w-5 text-red-600" />
+                  <div className="rounded-lg bg-destructive/10 p-2">
+                    <AlertTriangle className="h-5 w-5 text-destructive" />
                   </div>
                   <div>
                     <p className="text-sm text-muted-foreground">Cuentas por cobrar vencidas</p>
@@ -180,17 +180,17 @@ export default async function DashboardPage() {
             </Card>
           )}
           {bloque4.alertasFlota.map((a, i) => (
-            <Card key={i} className="border-amber-200">
+            <Card key={i} className="border-warning/40">
               <CardContent className="p-6">
                 <div className="flex items-center gap-3">
-                  <div className="rounded-lg bg-amber-100 dark:bg-amber-900/30 p-2">
-                    <Car className="h-5 w-5 text-amber-600" />
+                  <div className="rounded-lg bg-warning/10 p-2">
+                    <Car className="h-5 w-5 text-warning" />
                   </div>
                   <div>
                     <p className="text-sm text-muted-foreground">
                       {a.tipo === "SOAT" ? "SOAT" : a.tipo === "TECNOMECANICA" ? "Tecnomecánica" : "Póliza"} — {a.placa}
                     </p>
-                    <p className={`text-2xl font-bold ${a.diasRestantes < 0 ? "text-red-600" : ""}`}>
+                    <p className={`text-2xl font-bold ${a.diasRestantes < 0 ? "text-destructive" : ""}`}>
                       {a.diasRestantes < 0 ? `Vencido ${Math.abs(a.diasRestantes)} días` : `${a.diasRestantes} días`}
                     </p>
                     <Link href={`/vehiculos/${a.vehiculoId}`} className="text-xs text-primary underline mt-1 inline-block">
@@ -204,7 +204,7 @@ export default async function DashboardPage() {
           {bloque4.carteraVencida <= 0 && bloque4.alertasFlota.length === 0 && bloque4.serviciosSinVehiculo === 0 && bloque4.serviciosSinConductor === 0 && (
             <Card className="md:col-span-2">
               <CardContent className="p-6 text-center">
-                <p className="text-lg font-medium text-emerald-600">Todo en orden</p>
+                <p className="text-lg font-medium text-success">Todo en orden</p>
                 <p className="text-sm text-muted-foreground">No hay elementos que requieran atención inmediata</p>
               </CardContent>
             </Card>
